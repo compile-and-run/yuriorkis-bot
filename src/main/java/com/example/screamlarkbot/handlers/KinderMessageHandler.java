@@ -51,7 +51,7 @@ public class KinderMessageHandler {
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
                     return;
                 }
-                String response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 ${1:}" +
+                String response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 %s." +
                         " вы мне скажите, хоть один ребенок обрадуется Stare вот такой вот хуете в киндер сюрпризе? Madge";
                 twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
             }
