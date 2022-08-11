@@ -51,7 +51,7 @@ public class KinderMessageHandler {
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
                     return;
                 }
-                String response = username + " открыл киндер и получил OOOO " + toyName + " peepoClap";
+                String response = username + " открыл киндер и получил OOOO %s peepoClap";
                 twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
             }
         }
