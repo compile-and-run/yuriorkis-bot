@@ -31,6 +31,7 @@ public class BotConfiguration {
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
                 .withChatAccount(credential)
+                .withDefaultAuthToken(credential)
                 .build();
         client.getChat().joinChannel(channelName);
         client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.getName());
