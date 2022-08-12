@@ -5,6 +5,9 @@ import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
+import com.github.twitch4j.events.ChannelGoLiveEvent;
+import com.github.twitch4j.events.ChannelGoOfflineEvent;
+import com.github.twitch4j.eventsub.events.ChannelFollowEvent;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,8 @@ public class ReplyMessageHandler {
     private static final String DATE_PATTERN = "dd.MM.yyyy";
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Moscow");
 
+    private static final int MIN_DAYS_AFTER_CREATION = 7;
+
     public final TwitchClient twitchClient;
 
     @Value("${screamlark-bot.bot-name}")
@@ -46,6 +51,9 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::sayHello);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
         eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
+        eventManager.onEvent(ChannelFollowEvent.class, this::handleFollow);
+        eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
+        eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -78,16 +86,13 @@ public class ReplyMessageHandler {
 
     private void detectNewViewers(ChannelMessageEvent event) {
         String username = event.getUser().getName();
-        String token = oauth.substring("oauth:".length());
-        UserList userList = twitchClient.getHelix().getUsers(token, null, List.of(username)).execute();
-
-        if (!event.isDesignatedFirstMessage() || userList.getUsers().isEmpty()) {
+        if (!event.isDesignatedFirstMessage()) {
             return;
         }
-        User user = userList.getUsers().get(0);
-        LocalDateTime createdAt = LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
 
-        if (Duration.between(createdAt, LocalDateTime.now()).toDays() < 7) {
+        LocalDateTime createdAt = getCreatedAt(username);
+
+        if (Duration.between(createdAt, LocalDateTime.now()).toDays() < MIN_DAYS_AFTER_CREATION) {
             String response = "OOOO Детектор сани зафиксировал подозрительную активность! OOOO Аккаунт %s был создан %s!";
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
@@ -98,5 +103,33 @@ public class ReplyMessageHandler {
             String response = "Привет, новый зритель! " + Emotes.FROG_WAVE.getName();
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
+    }
+
+    private void handleFollow(ChannelFollowEvent event) {
+        String username = event.getUserName();
+
+        LocalDateTime createdAt = getCreatedAt(username);
+
+        if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
+            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.LIZARD_PLS;
+            twitchClient.getChat().sendMessage(event.getBroadcasterUserName(), Messages.reply(username, response));
+        }
+    }
+
+    private LocalDateTime getCreatedAt(String username) {
+        String token = oauth.substring("oauth:".length());
+        UserList userList = twitchClient.getHelix().getUsers(token, null, List.of(username)).execute();
+        User user = userList.getUsers().get(0);
+        return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
+    }
+
+    private void handleGoLive(ChannelGoLiveEvent event) {
+        String channelName = event.getChannel().getName();
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE));
+    }
+
+    private void handleGoOffline(ChannelGoOfflineEvent event) {
+        String channelName = event.getChannel().getName();
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN));
     }
 }
