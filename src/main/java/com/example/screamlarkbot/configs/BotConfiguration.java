@@ -28,6 +28,8 @@ public class BotConfiguration {
                 .build();
         client.getChat().joinChannel(channelName);
         client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.getName());
+        client.getClientHelper().enableFollowEventListener(channelName);
+        client.getClientHelper().enableStreamEventListener(channelName);
         return client;
     }
 }
