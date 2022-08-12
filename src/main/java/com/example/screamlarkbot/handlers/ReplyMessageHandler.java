@@ -40,9 +40,6 @@ public class ReplyMessageHandler {
     @Value("${screamlark-bot.bot-name}")
     private String botName;
 
-    @Value("${screamlark-bot.oauth}")
-    private String oauth;
-
     @PostConstruct
     public void init() {
         // TODO: add spring handler
@@ -117,8 +114,7 @@ public class ReplyMessageHandler {
     }
 
     private LocalDateTime getCreatedAt(String username) {
-        String token = oauth.substring("oauth:".length());
-        UserList userList = twitchClient.getHelix().getUsers(token, null, List.of(username)).execute();
+        UserList userList = twitchClient.getHelix().getUsers(null, null, List.of(username)).execute();
         User user = userList.getUsers().get(0);
         return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
     }
