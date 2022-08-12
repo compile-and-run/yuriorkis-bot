@@ -108,7 +108,7 @@ public class ReplyMessageHandler {
         LocalDateTime createdAt = getCreatedAt(username);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
-            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.LIZARD_PLS;
+            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.PEEPO_CLAP.getName();
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }

@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum Emotes {
     FROG_WAVE("FrogWave"),
     LIZARD_PLS("lizardPls"),
-    FEELS_WEAK_MAN("FeelsWeakMan");
+    FEELS_WEAK_MAN("FeelsWeakMan"),
+    PEEPO_CLAP("peepoCLap");
 
     private final String name;
 }
