@@ -5,9 +5,9 @@ import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
+import com.github.twitch4j.chat.events.channel.FollowEvent;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
-import com.github.twitch4j.eventsub.events.ChannelFollowEvent;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::sayHello);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
         eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
-        eventManager.onEvent(ChannelFollowEvent.class, this::handleFollow);
+        eventManager.onEvent(FollowEvent.class, this::handleFollow);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
     }
@@ -102,14 +102,14 @@ public class ReplyMessageHandler {
         }
     }
 
-    private void handleFollow(ChannelFollowEvent event) {
-        String username = event.getUserName();
+    private void handleFollow(FollowEvent event) {
+        String username = event.getUser().getName();
 
         LocalDateTime createdAt = getCreatedAt(username);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
             String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.LIZARD_PLS;
-            twitchClient.getChat().sendMessage(event.getBroadcasterUserName(), Messages.reply(username, response));
+            twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }
 
