@@ -24,6 +24,7 @@ public class BotConfiguration {
         var client = TwitchClientBuilder.builder()
                 .withEnableChat(true)
                 .withChatAccount(credential)
+                .withEnableHelix(true)
                 .build();
         client.getChat().joinChannel(channelName);
         client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.getName());

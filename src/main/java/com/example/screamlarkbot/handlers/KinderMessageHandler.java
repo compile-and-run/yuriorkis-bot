@@ -3,6 +3,7 @@ package com.example.screamlarkbot.handlers;
 import com.example.screamlarkbot.models.kinder.Toy;
 import com.example.screamlarkbot.services.KinderService;
 import com.example.screamlarkbot.utils.Emotes;
+import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
@@ -38,7 +39,7 @@ public class KinderMessageHandler {
             if (!toyName.isBlank()) {
                 // add toy
                 String response = "Игрушка %s была отправлена на фабрику киндеров! :)";
-                response = addUsernameToMessage(username, response);
+                response = Messages.reply(username, response);
                 twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toyName));
                 Toy toy = new Toy(null, toyName, event.getUser().getName());
                 kinderService.addToy(toy);
@@ -47,7 +48,7 @@ public class KinderMessageHandler {
                 Toy toy = kinderService.getRandomToy();
                 if (toy == null) {
                     String response = "Киндеров еще нет " + Emotes.FEELS_WEAK_MAN.getName();
-                    response = addUsernameToMessage(username, response);
+                    response = Messages.reply(username, response);
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
                     return;
                 }
@@ -57,9 +58,5 @@ public class KinderMessageHandler {
             }
         }
 
-    }
-
-    private String addUsernameToMessage(String username, String message) {
-        return "@" + username + " " + message;
     }
 }
