@@ -121,11 +121,11 @@ public class ReplyMessageHandler {
 
     private void handleGoLive(ChannelGoLiveEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE.getName()));
     }
 
     private void handleGoOffline(ChannelGoOfflineEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN.getName()));
     }
 }
