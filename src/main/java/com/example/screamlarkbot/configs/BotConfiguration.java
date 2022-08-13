@@ -33,10 +33,12 @@ public class BotConfiguration {
                 .withChatAccount(credential)
                 .withDefaultAuthToken(credential)
                 .build();
-        client.getChat().joinChannel(channelName);
-        client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.toString());
+
         client.getClientHelper().enableFollowEventListener(channelName);
         client.getClientHelper().enableStreamEventListener(channelName);
+
+        client.getChat().joinChannel(channelName);
+        client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.toString());
         return client;
     }
 }

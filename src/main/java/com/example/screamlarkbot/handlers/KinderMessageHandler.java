@@ -38,11 +38,16 @@ public class KinderMessageHandler {
             String toyName = message.substring(KINDER_COMMAND.length()).trim();
             if (!toyName.isBlank()) {
                 // add toy
-                String response = "Игрушка %s была отправлена на фабрику киндеров! :)";
-                response = Messages.reply(username, response);
-                twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toyName));
                 Toy toy = new Toy(null, toyName, event.getUser().getName());
-                kinderService.addToy(toy);
+                boolean isAdded = kinderService.addToy(toy);
+                String response;
+                if (isAdded) {
+                    response = String.format("Игрушка %s была отправлена на фабрику киндеров! :)", toyName);
+                } else {
+                    response = "Прости, такая игрушка уже есть " + Emotes.FEELS_WEAK_MAN;
+                }
+                response = Messages.reply(username, response);
+                twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
             } else {
                 // get toy
                 Toy toy = kinderService.getRandomToy();

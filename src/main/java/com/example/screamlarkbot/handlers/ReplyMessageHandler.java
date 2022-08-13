@@ -42,7 +42,6 @@ public class ReplyMessageHandler {
 
     @PostConstruct
     public void init() {
-        // TODO: add spring handler
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
         eventManager.onEvent(ChannelMessageEvent.class, this::sayHello);
@@ -54,7 +53,11 @@ public class ReplyMessageHandler {
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
-        log.info("[" + event.getChannel().getName() + "]["+event.getPermissions().toString()+"] " + event.getUser().getName() + ": " + event.getMessage());
+        String channelName = event.getChannel().getName();
+        String permissions = event.getPermissions().toString();
+        String username = event.getUser().getName();
+        String message = event.getMessage();
+        log.info("[" + channelName + "][" + permissions + "] " + username + ": " + message);
     }
 
     private void sayHello(ChannelMessageEvent event) {

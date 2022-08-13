@@ -3,6 +3,7 @@ package com.example.screamlarkbot.services;
 import com.example.screamlarkbot.models.kinder.Toy;
 import com.example.screamlarkbot.repositories.ToyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,8 +12,13 @@ public class KinderService {
 
     private final ToyRepository toyRepository;
 
-    public void addToy(Toy toy) {
-        toyRepository.save(toy);
+    public boolean addToy(Toy toy) {
+        try {
+            toyRepository.save(toy);
+            return true;
+        } catch (DataIntegrityViolationException e) {
+            return false;
+        }
     }
 
     public Toy getRandomToy() {
