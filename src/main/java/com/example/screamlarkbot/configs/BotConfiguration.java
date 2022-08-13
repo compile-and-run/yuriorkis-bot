@@ -34,7 +34,7 @@ public class BotConfiguration {
                 .withDefaultAuthToken(credential)
                 .build();
         client.getChat().joinChannel(channelName);
-        client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.getName());
+        client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.toString());
         client.getClientHelper().enableFollowEventListener(channelName);
         client.getClientHelper().enableStreamEventListener(channelName);
         return client;

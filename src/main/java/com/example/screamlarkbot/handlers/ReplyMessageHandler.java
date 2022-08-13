@@ -60,7 +60,7 @@ public class ReplyMessageHandler {
     private void sayHello(ChannelMessageEvent event) {
         String message = event.getMessage();
         if (message.toLowerCase().contains("@" + botName)) {
-            String response = "@" + event.getUser().getName() + " " + Emotes.FROG_WAVE.getName();
+            String response = "@" + event.getUser().getName() + " " + Emotes.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
     }
@@ -70,12 +70,13 @@ public class ReplyMessageHandler {
 
         String[] words = message.split(" ");
 
-        long lizardNumber = Arrays.stream(words).filter(w -> w.equals(Emotes.LIZARD_PLS.getName()))
+        long lizardNumber = Arrays.stream(words)
+                .filter(w -> w.equals(Emotes.LIZARD_PLS.toString()))
                 .count();
 
         if (lizardNumber > 0) {
             String response = IntStream.range(0, (int) lizardNumber)
-                    .mapToObj(n -> Emotes.LIZARD_PLS.getName())
+                    .mapToObj(n -> Emotes.LIZARD_PLS.toString())
                     .collect(Collectors.joining(" "));
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
@@ -90,14 +91,14 @@ public class ReplyMessageHandler {
         LocalDateTime createdAt = getCreatedAt(username);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() < MIN_DAYS_AFTER_CREATION) {
-            String response = "OOOO Детектор сани зафиксировал подозрительную активность! OOOO Аккаунт %s был создан %s!";
+            String response = "%s Детектор сани зафиксировал подозрительную активность! %s Аккаунт %s был создан %s!";
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
 
-            response = String.format(response, username, createdAt.format(dateFormatter));
+            response = String.format(response, Emotes.OOOO, Emotes.OOOO, username, createdAt.format(dateFormatter));
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         } else {
-            String response = "Привет, новый зритель! " + Emotes.FROG_WAVE.getName();
+            String response = "Привет, новый зритель! " + Emotes.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }
@@ -108,7 +109,7 @@ public class ReplyMessageHandler {
         LocalDateTime createdAt = getCreatedAt(username);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
-            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.PEEPO_CLAP.getName();
+            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.PEEPO_CLAP;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }
@@ -121,11 +122,11 @@ public class ReplyMessageHandler {
 
     private void handleGoLive(ChannelGoLiveEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE.getName()));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE));
     }
 
     private void handleGoOffline(ChannelGoOfflineEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN.getName()));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN));
     }
 }

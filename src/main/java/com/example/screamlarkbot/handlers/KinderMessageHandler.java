@@ -47,7 +47,7 @@ public class KinderMessageHandler {
                 // get toy
                 Toy toy = kinderService.getRandomToy();
                 if (toy == null) {
-                    String response = "Киндеров еще нет " + Emotes.FEELS_WEAK_MAN.getName();
+                    String response = "Киндеров еще нет " + Emotes.FEELS_WEAK_MAN;
                     response = Messages.reply(username, response);
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
                     return;
