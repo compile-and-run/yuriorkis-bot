@@ -36,7 +36,7 @@ public class ReplyMessageHandler {
 
     private static final int MIN_DAYS_AFTER_CREATION = 7;
 
-    public final TwitchClient twitchClient;
+    private final TwitchClient twitchClient;
 
     @Value("${screamlark-bot.bot-name}")
     private String botName;

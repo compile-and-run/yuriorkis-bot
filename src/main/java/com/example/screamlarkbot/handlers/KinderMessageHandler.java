@@ -20,9 +20,9 @@ public class KinderMessageHandler {
 
     private static final String KINDER_COMMAND = "!kinder";
 
-    public final TwitchClient twitchClient;
+    private final TwitchClient twitchClient;
 
-    public final KinderService kinderService;
+    private final KinderService kinderService;
 
     @PostConstruct
     public void init() {

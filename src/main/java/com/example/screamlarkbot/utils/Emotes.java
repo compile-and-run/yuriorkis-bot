@@ -8,7 +8,10 @@ public enum Emotes {
     LIZARD_PLS("lizardPls"),
     FEELS_WEAK_MAN("FeelsWeakMan"),
     PEEPO_CLAP("peepoClap"),
-    OOOO("OOOO");
+    OOOO("OOOO"),
+    FIGHT("fight"),
+    FIGHT2("fight2"),
+    STREAML_SMASH("streamlSmash");
 
     private final String name;
 
