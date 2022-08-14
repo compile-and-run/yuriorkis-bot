@@ -6,6 +6,7 @@ import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.chat.events.channel.FollowEvent;
+import com.github.twitch4j.chat.events.channel.SubscriptionEvent;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.helix.domain.User;
@@ -48,6 +49,7 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
         eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
+        eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
     }
@@ -121,6 +123,12 @@ public class ReplyMessageHandler {
         UserList userList = twitchClient.getHelix().getUsers(null, null, List.of(username)).execute();
         User user = userList.getUsers().get(0);
         return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
+    }
+
+    private void handleSubscription(SubscriptionEvent event) {
+        String username = event.getUser().getName();
+        String response = "Спасибо за подписку, ты лучший! " + Emotes.OOOO;
+        twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
     }
 
     private void handleGoLive(ChannelGoLiveEvent event) {
