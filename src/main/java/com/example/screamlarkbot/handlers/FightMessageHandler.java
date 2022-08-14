@@ -105,7 +105,7 @@ public class FightMessageHandler {
         response = String.format(response, winner.getUsername(), looser.getUsername());
         twitchClient.getChat().sendMessage(channelName, response);
 
-        int time = ThreadLocalRandom.current().nextInt(1, 6);
-        twitchClient.getChat().timeout(channelName, looser.getUsername(), Duration.ofMinutes(time), "");
+        int time = ThreadLocalRandom.current().nextInt(10, 60 * 3);
+        twitchClient.getChat().timeout(channelName, looser.getUsername(), Duration.ofSeconds(time), "");
     }
 }
