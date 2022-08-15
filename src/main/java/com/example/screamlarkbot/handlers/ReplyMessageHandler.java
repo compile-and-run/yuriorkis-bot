@@ -31,6 +31,8 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class ReplyMessageHandler {
 
+    private static final String HELP_COMMAND = "!help";
+    private static final String HELP_URL = "https://github.com/compile-and-run/screamlark-bot/blob/main/README.md";
     private static final String DATE_PATTERN = "dd.MM.yyyy";
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Moscow");
 
@@ -45,6 +47,7 @@ public class ReplyMessageHandler {
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
+        eventManager.onEvent(ChannelMessageEvent.class, this::processHelp);
         eventManager.onEvent(ChannelMessageEvent.class, this::sayHello);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
         eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
@@ -60,6 +63,15 @@ public class ReplyMessageHandler {
         String username = event.getUser().getName();
         String message = event.getMessage();
         log.info("[" + channelName + "][" + permissions + "] " + username + ": " + message);
+    }
+
+    private void processHelp(ChannelMessageEvent event) {
+        String username = event.getUser().getName();
+        String message = event.getMessage();
+        if (message.equals(HELP_COMMAND)) {
+            String response = Messages.reply(username, "Список команд тут: " + HELP_URL);
+            twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
+        }
     }
 
     private void sayHello(ChannelMessageEvent event) {
