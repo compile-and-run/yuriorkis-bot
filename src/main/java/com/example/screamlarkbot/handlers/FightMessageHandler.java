@@ -8,6 +8,7 @@ import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
+import com.github.twitch4j.common.enums.CommandPermission;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,9 +89,10 @@ public class FightMessageHandler {
 
         if (message.contains(Emotes.FIGHT.toString()) || message.contains(Emotes.FIGHT2.toString())
                 || message.contains(Emotes.STREAML_SMASH.toString())) {
+            boolean isMod = event.getPermissions().contains(CommandPermission.MODERATOR);
             fightService.punch(username,
                     (f1, f2, d) -> onDamage(channelName, f1, f2, d),
-                    (f1, f2) -> onKnockout(channelName, f1, f2));
+                    (f1, f2) -> onKnockout(channelName, f1, f2, isMod));
         }
     }
 
@@ -100,12 +102,15 @@ public class FightMessageHandler {
         twitchClient.getChat().sendMessage(channelName, response);
     }
 
-    private void onKnockout(String channelName, Fighter winner, Fighter looser) {
+    private void onKnockout(String channelName, Fighter winner, Fighter looser, boolean isMod) {
         String response = "%s нокаутировал %s! " + Emotes.OOOO;
         response = String.format(response, winner.getUsername(), looser.getUsername());
         twitchClient.getChat().sendMessage(channelName, response);
 
-        int time = ThreadLocalRandom.current().nextInt(10, 60 * 3);
-        twitchClient.getChat().timeout(channelName, looser.getUsername(), Duration.ofSeconds(time), "");
+        // mods shouldn't time out regular viewers, it's not fair
+        if (!isMod) {
+            int time = ThreadLocalRandom.current().nextInt(10, 60 * 3);
+            twitchClient.getChat().timeout(channelName, looser.getUsername(), Duration.ofSeconds(time), "");
+        }
     }
 }
