@@ -76,7 +76,7 @@ public class ReplyMessageHandler {
 
     private void sayHello(ChannelMessageEvent event) {
         String message = event.getMessage();
-        if (message.toLowerCase().contains("@" + botName.toLowerCase())) {
+        if (message.toLowerCase().startsWith("@" + botName.toLowerCase())) {
             String response = "@" + event.getUser().getName() + " " + Emotes.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }

@@ -60,7 +60,7 @@ public class FightMessageHandler {
                 return;
             }
 
-            if (username.equals(botName.toLowerCase())) {
+            if (opponent.equals(botName.toLowerCase())) {
                 String response = "Какое плохое зло я тебе сделал? Зачем ты так со мной? " + Emotes.FEELS_WEAK_MAN;
                 twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
                 return;
