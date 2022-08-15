@@ -32,6 +32,9 @@ public class FightMessageHandler {
     @Value("${screamlark-bot.channel-name}")
     private String channelName;
 
+    @Value("${screamlark-bot.bot-name}")
+    private String botName;
+
     @PostConstruct
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
@@ -54,6 +57,12 @@ public class FightMessageHandler {
 
             if (username.equals(opponent)) {
                 twitchClient.getChat().sendMessage(channelName, Messages.reply(username, "MMMM"));
+                return;
+            }
+
+            if (username.equals(botName.toLowerCase())) {
+                String response = "Какое плохое зло я тебе сделал? Зачем ты так со мной? " + Emotes.FEELS_WEAK_MAN;
+                twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
                 return;
             }
 
