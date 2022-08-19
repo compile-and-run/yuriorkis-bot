@@ -1,6 +1,6 @@
 package com.example.screamlarkbot.configs;
 
-import com.example.screamlarkbot.utils.Emotes;
+import com.example.screamlarkbot.utils.Emote;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
@@ -40,7 +40,7 @@ public class BotConfiguration {
         client.getClientHelper().enableStreamEventListener(channelName);
 
         client.getChat().joinChannel(channelName);
-        client.getChat().sendMessage(channelName, Emotes.FROG_WAVE.toString());
+        client.getChat().sendMessage(channelName, Emote.FROG_WAVE.toString());
         return client;
     }
 }

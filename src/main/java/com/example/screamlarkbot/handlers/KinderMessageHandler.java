@@ -2,7 +2,7 @@ package com.example.screamlarkbot.handlers;
 
 import com.example.screamlarkbot.models.kinder.Toy;
 import com.example.screamlarkbot.services.KinderService;
-import com.example.screamlarkbot.utils.Emotes;
+import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
@@ -44,7 +44,7 @@ public class KinderMessageHandler {
                 if (isAdded) {
                     response = String.format("Игрушка %s была отправлена на фабрику киндеров! :)", toyName);
                 } else {
-                    response = "Прости, такая игрушка уже есть " + Emotes.FEELS_WEAK_MAN;
+                    response = "Прости, такая игрушка уже есть " + Emote.FEELS_WEAK_MAN;
                 }
                 response = Messages.reply(username, response);
                 twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
@@ -52,7 +52,7 @@ public class KinderMessageHandler {
                 // get toy
                 Toy toy = kinderService.getRandomToy();
                 if (toy == null) {
-                    String response = "Киндеров еще нет " + Emotes.FEELS_WEAK_MAN;
+                    String response = "Киндеров еще нет " + Emote.FEELS_WEAK_MAN;
                     response = Messages.reply(username, response);
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
                     return;

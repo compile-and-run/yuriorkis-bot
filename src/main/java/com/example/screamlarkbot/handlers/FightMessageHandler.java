@@ -3,7 +3,7 @@ package com.example.screamlarkbot.handlers;
 import com.example.screamlarkbot.models.fight.DuelRequest;
 import com.example.screamlarkbot.models.fight.Fighter;
 import com.example.screamlarkbot.services.FightService;
-import com.example.screamlarkbot.utils.Emotes;
+import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
@@ -40,7 +40,7 @@ public class FightMessageHandler {
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::processDuelCommand);
         eventManager.onEvent(ChannelMessageEvent.class, this::processPunchCommand);
-        fightService.setOnTimeUp(() -> twitchClient.getChat().sendMessage(channelName, "Время дуэли вышло " + Emotes.FEELS_WEAK_MAN));
+        fightService.setOnTimeUp(() -> twitchClient.getChat().sendMessage(channelName, "Время дуэли вышло " + Emote.FEELS_WEAK_MAN));
     }
 
     private void processDuelCommand(ChannelMessageEvent event) {
@@ -61,7 +61,7 @@ public class FightMessageHandler {
             }
 
             if (opponent.equals(botName.toLowerCase())) {
-                String response = "Какое плохое зло я тебе сделал? Зачем ты так со мной? " + Emotes.FEELS_WEAK_MAN;
+                String response = "Какое плохое зло я тебе сделал? Зачем ты так со мной? " + Emote.FEELS_WEAK_MAN;
                 twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
                 return;
             }
@@ -73,17 +73,17 @@ public class FightMessageHandler {
     }
 
     private void onAccept(String channelName, DuelRequest duelRequest) {
-        String response = "%s принял вызов от %s! Да начнется битва! " + Emotes.FIGHT + " " + Emotes.FIGHT2;
+        String response = "%s принял вызов от %s! Да начнется битва! " + Emote.FIGHT + " " + Emote.FIGHT2;
         response = String.format(response, duelRequest.getOpponent(), duelRequest.getRequester());
         twitchClient.getChat().sendMessage(channelName, response);
 
         response = "Используйте эти смайлы, чтобы ударить: %s %s %s";
-        response = String.format(response, Emotes.FIGHT, Emotes.FIGHT2, Emotes.STREAML_SMASH);
+        response = String.format(response, Emote.FIGHT, Emote.FIGHT2, Emote.STREAML_SMASH);
         twitchClient.getChat().sendMessage(channelName, response);
     }
 
     private void onAdd(String channelName, DuelRequest duelRequest) {
-        String response = "%s вызывает тебя на дуэль! Отправь %s %s в чат, чтобы принять вызов! " + Emotes.FIGHT;
+        String response = "%s вызывает тебя на дуэль! Отправь %s %s в чат, чтобы принять вызов! " + Emote.FIGHT;
         response = String.format(response, duelRequest.getRequester(), DUEL_COMMAND, duelRequest.getRequester());
         twitchClient.getChat().sendMessage(channelName, Messages.reply(duelRequest.getOpponent(), response));
     }
@@ -96,8 +96,8 @@ public class FightMessageHandler {
             return;
         }
 
-        if (message.contains(Emotes.FIGHT.toString()) || message.contains(Emotes.FIGHT2.toString())
-                || message.contains(Emotes.STREAML_SMASH.toString())) {
+        if (message.contains(Emote.FIGHT.toString()) || message.contains(Emote.FIGHT2.toString())
+                || message.contains(Emote.STREAML_SMASH.toString())) {
             boolean isMod = event.getPermissions().contains(CommandPermission.MODERATOR);
             fightService.punch(username,
                     (f1, f2, d) -> onDamage(channelName, f1, f2, d),
@@ -112,7 +112,7 @@ public class FightMessageHandler {
     }
 
     private void onKnockout(String channelName, Fighter winner, Fighter looser, boolean isMod) {
-        String response = "%s нокаутировал %s! " + Emotes.OOOO;
+        String response = "%s нокаутировал %s! " + Emote.OOOO;
         response = String.format(response, winner.getUsername(), looser.getUsername());
         twitchClient.getChat().sendMessage(channelName, response);
 

@@ -1,12 +1,13 @@
 package com.example.screamlarkbot.handlers;
 
-import com.example.screamlarkbot.utils.Emotes;
+import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import com.github.twitch4j.chat.events.channel.FollowEvent;
 import com.github.twitch4j.chat.events.channel.SubscriptionEvent;
+import com.github.twitch4j.chat.events.channel.UserBanEvent;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.helix.domain.User;
@@ -55,6 +56,7 @@ public class ReplyMessageHandler {
         eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
+        eventManager.onEvent(UserBanEvent.class, this::handleBan);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -77,7 +79,7 @@ public class ReplyMessageHandler {
     private void sayHello(ChannelMessageEvent event) {
         String message = event.getMessage();
         if (message.toLowerCase().startsWith("@" + botName.toLowerCase())) {
-            String response = "@" + event.getUser().getName() + " " + Emotes.FROG_WAVE;
+            String response = "@" + event.getUser().getName() + " " + Emote.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
     }
@@ -88,12 +90,12 @@ public class ReplyMessageHandler {
         String[] words = message.split(" ");
 
         long lizardNumber = Arrays.stream(words)
-                .filter(w -> w.equals(Emotes.LIZARD_PLS.toString()))
+                .filter(w -> w.equals(Emote.LIZARD_PLS.toString()))
                 .count();
 
         if (lizardNumber > 0) {
             String response = IntStream.range(0, (int) lizardNumber)
-                    .mapToObj(n -> Emotes.LIZARD_PLS.toString())
+                    .mapToObj(n -> Emote.LIZARD_PLS.toString())
                     .collect(Collectors.joining(" "));
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
@@ -112,10 +114,10 @@ public class ReplyMessageHandler {
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
 
-            response = String.format(response, Emotes.OOOO, Emotes.OOOO, username, createdAt.format(dateFormatter));
+            response = String.format(response, Emote.OOOO, Emote.OOOO, username, createdAt.format(dateFormatter));
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         } else {
-            String response = "Привет, новый зритель! " + Emotes.FROG_WAVE;
+            String response = "Привет, новый зритель! " + Emote.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }
@@ -126,7 +128,7 @@ public class ReplyMessageHandler {
         LocalDateTime createdAt = getCreatedAt(username);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
-            String response = "Спасибо за фоллоу, добро пожаловать! " + Emotes.PEEPO_CLAP;
+            String response = "Спасибо за фоллоу, добро пожаловать! " + Emote.PEEPO_CLAP;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
         }
     }
@@ -139,17 +141,24 @@ public class ReplyMessageHandler {
 
     private void handleSubscription(SubscriptionEvent event) {
         String username = event.getUser().getName();
-        String response = "Спасибо за подписку, ты лучший! " + Emotes.OOOO;
+        String response = "Спасибо за подписку, ты лучший! " + Emote.OOOO;
         twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
     }
 
     private void handleGoLive(ChannelGoLiveEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emotes.FROG_WAVE));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emote.FROG_WAVE));
     }
 
     private void handleGoOffline(ChannelGoOfflineEvent event) {
         String channelName = event.getChannel().getName();
-        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emotes.FEELS_WEAK_MAN));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emote.FEELS_WEAK_MAN));
+    }
+
+    private void handleBan(UserBanEvent event) {
+        String channelName = event.getChannel().getName();
+        String username = event.getUser().getName();
+        String response = "%s получил справедливый бан за мнение " + Emote.VERY_POG;
+        twitchClient.getChat().sendMessage(channelName, String.format(response, username));
     }
 }
