@@ -34,7 +34,20 @@ public class KinderMessageHandler {
         String username = event.getUser().getName();
         String message = event.getMessage();
 
-        if (message.startsWith(KINDER_COMMAND)) {
+        if (message.equals(KINDER_COMMAND)) {
+            // get toy
+            Toy toy = kinderService.getRandomToy();
+            if (toy == null) {
+                String response = "Киндеров еще нет " + Emote.FEELS_WEAK_MAN;
+                response = Messages.reply(username, response);
+                twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
+                return;
+            }
+            String response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 %s ." +
+                    " вы мне скажите, хоть один ребенок обрадуется Stare вот такой вот хуете в киндер сюрпризе? Madge";
+            twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
+        }
+        if (message.startsWith(KINDER_COMMAND + " ")) {
             String toyName = message.substring(KINDER_COMMAND.length()).trim();
             if (!toyName.isBlank()) {
                 // add toy
@@ -48,18 +61,6 @@ public class KinderMessageHandler {
                 }
                 response = Messages.reply(username, response);
                 twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
-            } else {
-                // get toy
-                Toy toy = kinderService.getRandomToy();
-                if (toy == null) {
-                    String response = "Киндеров еще нет " + Emote.FEELS_WEAK_MAN;
-                    response = Messages.reply(username, response);
-                    twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
-                    return;
-                }
-                String response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 %s ." +
-                        " вы мне скажите, хоть один ребенок обрадуется Stare вот такой вот хуете в киндер сюрпризе? Madge";
-                twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
             }
         }
 
