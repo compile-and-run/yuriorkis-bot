@@ -1,5 +1,7 @@
 package com.example.screamlarkbot.services;
 
+import com.example.screamlarkbot.exception.CoolDownException;
+import com.example.screamlarkbot.exception.ToyExistsException;
 import com.example.screamlarkbot.models.kinder.Toy;
 import com.example.screamlarkbot.repositories.ToyRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +10,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -16,18 +22,36 @@ import java.util.concurrent.TimeUnit;
 public class KinderService {
 
     private static final int MAX_TOY_NUMBER = 100;
+    private static final int ADDING_COOL_DOWN = 15;
+    private static final int GETTING_COOL_DOWN = 5;
     private final ToyRepository toyRepository;
 
-    public boolean addToy(Toy toy) {
+    private final Map<String, LocalDateTime> addingCoolDowns = new ConcurrentHashMap<>();
+    private final Map<String, LocalDateTime> gettingCoolDowns = new ConcurrentHashMap<>();
+
+    public void addToy(Toy toy) throws CoolDownException, ToyExistsException {
         try {
+            var username = toy.getOwner();
+            var lastAdding = addingCoolDowns.getOrDefault(username, LocalDateTime.now().minusDays(1));
+            var duration = Duration.between(lastAdding, LocalDateTime.now()).toMinutes();
+            if (duration < ADDING_COOL_DOWN) {
+                throw new CoolDownException(ADDING_COOL_DOWN - duration);
+            }
             toyRepository.save(toy);
-            return true;
+            addingCoolDowns.put(toy.getOwner(), toy.getCreatedAt());
+
         } catch (DataIntegrityViolationException e) {
-            return false;
+            throw new ToyExistsException();
         }
     }
 
-    public Toy getRandomToy() {
+    public Toy getRandomToy(String username) throws CoolDownException {
+        var lastGetting = gettingCoolDowns.getOrDefault(username, LocalDateTime.now().minusDays(1));
+        var duration = Duration.between(lastGetting, LocalDateTime.now()).toMinutes();
+        if (duration < GETTING_COOL_DOWN) {
+            throw new CoolDownException(GETTING_COOL_DOWN - duration);
+        }
+        gettingCoolDowns.put(username, LocalDateTime.now());
         return toyRepository.getRandomToy();
     }
 

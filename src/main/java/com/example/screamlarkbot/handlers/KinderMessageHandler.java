@@ -1,5 +1,7 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.exception.CoolDownException;
+import com.example.screamlarkbot.exception.ToyExistsException;
 import com.example.screamlarkbot.models.kinder.Toy;
 import com.example.screamlarkbot.services.KinderService;
 import com.example.screamlarkbot.utils.Emote;
@@ -36,16 +38,22 @@ public class KinderMessageHandler {
 
         if (message.equals(KINDER_COMMAND)) {
             // get toy
-            Toy toy = kinderService.getRandomToy();
-            if (toy == null) {
-                String response = "Киндеров еще нет " + Emote.FEELS_WEAK_MAN;
-                response = Messages.reply(username, response);
-                twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
-                return;
+            String response;
+            try {
+                Toy toy = kinderService.getRandomToy(username);
+                if (toy != null) {
+                    response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 %s ." +
+                            " вы мне скажите, хоть один ребенок обрадуется Stare вот такой вот хуете в киндер сюрпризе? Madge";
+                    twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
+                    return;
+                } else {
+                    response = "Киндеров еще нет " + Emote.FEELS_WEAK_MAN;
+                }
+            } catch (CoolDownException e) {
+                response = String.format("Ты недавно уже брал киндер %s Жди %s мин.", Emote.STARE, e.getMinutesLeft());
             }
-            String response = username + " хочет обратиться к создателям киндер сюрприза Basedge вот такая хуйня попалась в яйце \uD83D\uDC49 %s ." +
-                    " вы мне скажите, хоть один ребенок обрадуется Stare вот такой вот хуете в киндер сюрпризе? Madge";
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), String.format(response, toy.getName()));
+            response = Messages.reply(username, response);
+            twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
         if (message.startsWith(KINDER_COMMAND + " ")) {
             String toyName = message.substring(KINDER_COMMAND.length()).trim();
@@ -55,11 +63,14 @@ public class KinderMessageHandler {
                         .name(toyName)
                         .owner(event.getUser().getName())
                         .build();
-                boolean isAdded = kinderService.addToy(toy);
                 String response;
-                if (isAdded) {
+                try {
+                    kinderService.addToy(toy);
                     response = String.format("Игрушка %s была отправлена на фабрику киндеров! :)", toyName);
-                } else {
+
+                } catch (CoolDownException e) {
+                    response = String.format("Ты недавно уже добавлял игрушку %s Жди %s мин.", Emote.STARE, e.getMinutesLeft());
+                } catch (ToyExistsException e) {
                     response = "Прости, такая игрушка уже есть " + Emote.FEELS_WEAK_MAN;
                 }
                 response = Messages.reply(username, response);
