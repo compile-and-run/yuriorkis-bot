@@ -19,5 +19,6 @@ public class Toy {
     @Column(unique = true)
     private String name;
     private String owner;
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

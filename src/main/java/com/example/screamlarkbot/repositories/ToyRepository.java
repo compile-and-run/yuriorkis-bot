@@ -10,6 +10,6 @@ public interface ToyRepository extends JpaRepository<Toy, Long>, CustomToyReposi
 
     @Transactional
     @Modifying
-    @Query(value = "DELETE from TOY WHERE id IN (SELECT id FROM TOY ORDER BY createdAt LIMIT :limit)", nativeQuery = true)
+    @Query(value = "DELETE from TOY WHERE id IN (SELECT id FROM TOY ORDER BY created_at LIMIT :limit)", nativeQuery = true)
     void deleteOldToys(long limit);
 }
