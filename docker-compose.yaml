@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  screamlark-bot:
+    build: .
+    container_name: screamlark-bot
+    environment:
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
