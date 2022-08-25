@@ -3,12 +3,14 @@ package com.example.screamlarkbot.models.kinder;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-@AllArgsConstructor
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 public class Toy {
     @Id
@@ -17,4 +19,5 @@ public class Toy {
     @Column(unique = true)
     private String name;
     private String owner;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

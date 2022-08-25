@@ -51,7 +51,10 @@ public class KinderMessageHandler {
             String toyName = message.substring(KINDER_COMMAND.length()).trim();
             if (!toyName.isBlank()) {
                 // add toy
-                Toy toy = new Toy(null, toyName, event.getUser().getName());
+                Toy toy = Toy.builder()
+                        .name(toyName)
+                        .owner(event.getUser().getName())
+                        .build();
                 boolean isAdded = kinderService.addToy(toy);
                 String response;
                 if (isAdded) {
