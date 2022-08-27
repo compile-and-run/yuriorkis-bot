@@ -11,4 +11,5 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
     volumes:
       - ./data:/data
+      - ./log:/log
     restart: unless-stopped
