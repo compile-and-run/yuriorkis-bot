@@ -103,6 +103,7 @@ public class ReplyMessageHandler {
 
     private void detectNewViewers(ChannelMessageEvent event) {
         String username = event.getUser().getName();
+        log.info("'{}' sent their first message", username);
         if (!event.isDesignatedFirstMessage()) {
             return;
         }
@@ -124,6 +125,7 @@ public class ReplyMessageHandler {
 
     private void handleFollow(FollowEvent event) {
         String username = event.getUser().getName();
+        log.info("'{}' followed", username);
 
         LocalDateTime createdAt = getCreatedAt(username);
 
@@ -141,23 +143,27 @@ public class ReplyMessageHandler {
 
     private void handleSubscription(SubscriptionEvent event) {
         String username = event.getUser().getName();
+        log.info("'{}' subscribed", username);
         String response = "Спасибо за подписку, ты лучший! " + Emote.OOOO;
         twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
     }
 
     private void handleGoLive(ChannelGoLiveEvent event) {
         String channelName = event.getChannel().getName();
+        log.info("'{}' is live", channelName);
         twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Привет, стримлер! " + Emote.FROG_WAVE));
     }
 
     private void handleGoOffline(ChannelGoOfflineEvent event) {
         String channelName = event.getChannel().getName();
+        log.info("'{}' is offline", channelName);
         twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, "Пока, стримлер " + Emote.FEELS_WEAK_MAN));
     }
 
     private void handleBan(UserBanEvent event) {
         String channelName = event.getChannel().getName();
         String username = event.getUser().getName();
+        log.info("'{}' was banned", username);
         String response = "%s получил справедливый бан за мнение " + Emote.VERY_POG;
         twitchClient.getChat().sendMessage(channelName, String.format(response, username));
     }
