@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Component
@@ -40,6 +41,8 @@ public class BlabMessageHandler {
         Commands.registerCommand(eventManager, STORY_COMMAND, this::handleStoryCommand);
         Commands.registerCommand(eventManager, WIKI_COMMAND, this::handleWikiCommand);
         Commands.registerCommand(eventManager, SYNOPSIS_COMMAND, this::handleSynopsisCommand);
+
+        eventManager.onEvent(ChannelMessageEvent.class, this::sendRandomMessage);
     }
 
     private void handleBlabCommand(ChannelMessageEvent event, String args) {
@@ -89,5 +92,17 @@ public class BlabMessageHandler {
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.SYNOPSIS, args)
                 .whenComplete((text, t) -> twitchClient.getChat().sendMessage(channel, Messages.reply(username, text)));
+    }
+
+    private void sendRandomMessage(ChannelMessageEvent event) {
+        String message = event.getMessage();
+        int randomNumber = ThreadLocalRandom.current().nextInt(0, 30);
+        if (randomNumber == 0) {
+            String text = message.replace("[^А-Яа-я]+ ", "").trim();
+            if (text.isEmpty()) return;
+            String[] words = text.split(" ");
+            int randomIndex = ThreadLocalRandom.current().nextInt(0, words.length);
+            handleWisdomCommand(event, words[randomIndex]);
+        }
     }
 }
