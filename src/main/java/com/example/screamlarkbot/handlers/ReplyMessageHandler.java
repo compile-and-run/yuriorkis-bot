@@ -49,7 +49,6 @@ public class ReplyMessageHandler {
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
         eventManager.onEvent(ChannelMessageEvent.class, this::processHelp);
-        eventManager.onEvent(ChannelMessageEvent.class, this::sayHello);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
         eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
@@ -72,14 +71,6 @@ public class ReplyMessageHandler {
         String message = event.getMessage();
         if (message.equals(HELP_COMMAND)) {
             String response = Messages.reply(username, "Список команд тут: " + HELP_URL);
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
-        }
-    }
-
-    private void sayHello(ChannelMessageEvent event) {
-        String message = event.getMessage();
-        if (message.toLowerCase().startsWith("@" + botName.toLowerCase())) {
-            String response = "@" + event.getUser().getName() + " " + Emote.FROG_WAVE;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
         }
     }

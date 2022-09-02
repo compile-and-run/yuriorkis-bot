@@ -34,6 +34,7 @@ public class BlabService {
             BlabResponse body = response.getBody();
             if (body.getText() == null || body.getText().isEmpty()) {
                 log.info("response text is empty");
+                return CompletableFuture.completedFuture(null);
             }
             return CompletableFuture.completedFuture(body.getQuery() + body.getText());
         } else {
