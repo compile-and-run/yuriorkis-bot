@@ -103,10 +103,10 @@ public class ReplyMessageHandler {
 
     private void detectNewViewers(ChannelMessageEvent event) {
         String username = event.getUser().getName();
-        log.info("'{}' sent their first message", username);
         if (!event.isDesignatedFirstMessage()) {
             return;
         }
+        log.info("'{}' sent their first message", username);
 
         LocalDateTime createdAt = getCreatedAt(username);
 

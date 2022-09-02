@@ -4,6 +4,7 @@ import com.example.screamlarkbot.models.blab.BlabRequest;
 import com.example.screamlarkbot.models.blab.BlabResponse;
 import com.example.screamlarkbot.models.blab.BlabStyle;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BlabService {
@@ -32,6 +34,7 @@ public class BlabService {
             BlabResponse body = response.getBody();
             return CompletableFuture.completedFuture(body.getQuery() + body.getText());
         } else {
+            log.info("response body is empty");
             return CompletableFuture.completedFuture(null);
         }
     }
