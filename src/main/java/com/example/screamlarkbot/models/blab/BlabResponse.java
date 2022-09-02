@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class BlabResponse {
+    private String query;
     private String text;
 }

@@ -9,9 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 @RequiredArgsConstructor
 @Service
@@ -31,7 +29,8 @@ public class BlabService {
                 .build();
         ResponseEntity<BlabResponse> response = restTemplate.postForEntity(URL, request, BlabResponse.class);
         if (response.hasBody()) {
-            return CompletableFuture.completedFuture(response.getBody().getText());
+            BlabResponse body = response.getBody();
+            return CompletableFuture.completedFuture(body.getQuery() + body.getText());
         } else {
             return CompletableFuture.completedFuture(null);
         }
