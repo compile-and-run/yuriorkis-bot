@@ -5,10 +5,13 @@ import com.example.screamlarkbot.models.blab.BlabResponse;
 import com.example.screamlarkbot.models.blab.BlabStyle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @RequiredArgsConstructor
 @Service
@@ -17,9 +20,10 @@ public class BlabService {
     private static final String URL = "https://zeapi.yandex.net/lab/api/yalm/text3";
     private final RestTemplate restTemplate;
 
-    public Optional<String> generate(BlabStyle style, String query) {
+    @Async
+    public CompletableFuture<String> generate(BlabStyle style, String query) {
         if (query.isBlank()) {
-            return Optional.empty();
+            return CompletableFuture.completedFuture(null);
         }
         BlabRequest request = BlabRequest.builder()
                 .intro(style.getIntro())
@@ -27,9 +31,9 @@ public class BlabService {
                 .build();
         ResponseEntity<BlabResponse> response = restTemplate.postForEntity(URL, request, BlabResponse.class);
         if (response.hasBody()) {
-            return Optional.of(response.getBody().getText());
+            return CompletableFuture.completedFuture(response.getBody().getText());
         } else {
-            return Optional.empty();
+            return CompletableFuture.completedFuture(null);
         }
     }
 
