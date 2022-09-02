@@ -32,6 +32,9 @@ public class BlabService {
         ResponseEntity<BlabResponse> response = restTemplate.postForEntity(URL, request, BlabResponse.class);
         if (response.hasBody()) {
             BlabResponse body = response.getBody();
+            if (body.getText() == null || body.getText().isEmpty()) {
+                log.info("response text is empty");
+            }
             return CompletableFuture.completedFuture(body.getQuery() + body.getText());
         } else {
             log.info("response body is empty");
