@@ -9,6 +9,7 @@ import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,6 +31,9 @@ public class BlabMessageHandler {
     private final TwitchClient twitchClient;
 
     private final BlabService blabService;
+
+    @Value("${screamlark-bot.bot-name}")
+    private String botName;
 
     @PostConstruct
     public void init() {
@@ -101,6 +105,7 @@ public class BlabMessageHandler {
 
     private void sendRandomMessage(ChannelMessageEvent event) {
         String message = event.getMessage();
+        if (message.startsWith("@" + botName)) return;
         int randomNumber = ThreadLocalRandom.current().nextInt(0, 30);
         if (randomNumber == 0) {
             String text = message.replace("[^А-Яа-я]+ ", "").trim();

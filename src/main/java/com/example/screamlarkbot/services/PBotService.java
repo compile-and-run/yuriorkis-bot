@@ -1,18 +1,26 @@
 package com.example.screamlarkbot.services;
 
+import com.example.screamlarkbot.models.pbot.Dialog;
 import com.example.screamlarkbot.models.pbot.PBotResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.UUID;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.CRC32;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,35 +34,71 @@ public class PBotService {
     @Value("${screamlark-bot.bot-name}")
     private String botName;
 
+    // username -> dialog
+    private final Map<String, Dialog> dialogs = new ConcurrentHashMap<>();
+
     @Async
     public CompletableFuture<String> getAnswer(String username, String message) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("request", message);
         map.add("bot_name", botName);
         map.add("user_name", username);
         map.add("dialog_lang", "ru");
-        map.add("dialog_id", UUID.randomUUID().toString());
 
-        // IDK what it is
-        map.add("a", "public-api");
-        map.add("b", "772247888");
-        map.add("c", "1061668088");
-        map.add("d", "1523365651");
-        map.add("e", "0.004262932444960343");
-        map.add("t", "1662146744665");
-        map.add("x", "1.1644375462831635");
+        Dialog dialog = dialogs.computeIfAbsent(username, key -> new Dialog());
+        map.add("dialog_id", dialog.getDialogId());
+
+        var history = dialog.getHistory();
+        map.add("answer_1", history.get(5));
+        map.add("request_1", history.get(4));
+        map.add("answer_2", history.get(3));
+        map.add("request_2", history.get(2));
+        map.add("answer_3", history.get(1));
+        map.add("request_3", history.get(0));
+
+        generateUrlSign(map);
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
         ResponseEntity<PBotResponse> response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
 
         if (response.hasBody()) {
-            return CompletableFuture.completedFuture(response.getBody().getAnswer());
+            var answer = response.getBody().getAnswer();
+            dialog.addRequestAndAnswer(message, answer);
+            return CompletableFuture.completedFuture(answer);
         }
         return CompletableFuture.completedFuture(null);
+    }
+
+    private void generateUrlSign(MultiValueMap<String, String> map) {
+        var time = Long.toString(Instant.now().toEpochMilli());
+        map.add("a", "public-api");
+        map.add("b", computeCRC32(time + "b"));
+        map.add("c", generateCRCSign(time));
+        map.add("d", computeCRC32(Instant.now().toEpochMilli() + "d"));
+        map.add("e", Double.toString(Math.random()));
+        map.add("t", time);
+        map.add("x", Double.toString(Math.random() * 10));
+    }
+
+    private String computeCRC32(String value) {
+        var crc = new CRC32();
+        crc.update(value.getBytes());
+        return Long.toString(crc.getValue());
+    }
+
+    private String generateCRCSign(String value) {
+        var k1 = "qVxRWnespIsJg7DxFbF6N9FiQR5cjnHy";
+        var k21 = "ygru3JcToH4dPdiN";
+        return computeCRC32("public-api" + value + k1 + k21 + "H5SXOYIc00qMXPKJ");
+    }
+
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+    public synchronized void removeOldToys() {
+        dialogs.entrySet()
+                .removeIf(entry -> Duration.between(entry.getValue().getLastUpdate(), LocalDateTime.now()).toHours() >= 1);
     }
 }
