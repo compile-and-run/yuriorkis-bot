@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class BlabService {
 
+    private static final int MAX_SIZE = 500 - 27 - 3;
     private static final String URL = "https://zeapi.yandex.net/lab/api/yalm/text3";
     private final RestTemplate restTemplate;
 
@@ -43,7 +44,13 @@ public class BlabService {
             log.info("response text is empty");
             return CompletableFuture.completedFuture(null);
         }
-        return CompletableFuture.completedFuture(body.getQuery() + body.getText());
+        var answer = body.getQuery() + body.getText();
+        answer = answer.replace("\\s+", " ").trim();
+        if (answer.length() > MAX_SIZE) {
+            answer = answer.substring(0, MAX_SIZE);
+            answer += "...";
+        }
+        return CompletableFuture.completedFuture(answer);
     }
 
 }
