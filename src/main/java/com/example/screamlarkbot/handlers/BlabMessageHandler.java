@@ -32,9 +32,6 @@ public class BlabMessageHandler {
 
     private final BlabService blabService;
 
-    @Value("${screamlark-bot.bot-name}")
-    private String botName;
-
     @PostConstruct
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
@@ -45,8 +42,6 @@ public class BlabMessageHandler {
         Commands.registerCommand(eventManager, STORY_COMMAND, this::handleStoryCommand);
         Commands.registerCommand(eventManager, WIKI_COMMAND, this::handleWikiCommand);
         Commands.registerCommand(eventManager, SYNOPSIS_COMMAND, this::handleSynopsisCommand);
-
-        eventManager.onEvent(ChannelMessageEvent.class, this::sendRandomMessage);
     }
 
     private void handleBlabCommand(ChannelMessageEvent event, String args) {
@@ -101,18 +96,5 @@ public class BlabMessageHandler {
     private void sendReply(String channel, String username, String text) {
         if (text == null ) return;
         twitchClient.getChat().sendMessage(channel, Messages.reply(username, text));
-    }
-
-    private void sendRandomMessage(ChannelMessageEvent event) {
-        String message = event.getMessage();
-        if (message.startsWith("@" + botName)) return;
-        int randomNumber = ThreadLocalRandom.current().nextInt(0, 30);
-        if (randomNumber == 0) {
-            String text = message.replace("[^А-Яа-я]+ ", "").trim();
-            if (text.isEmpty()) return;
-            String[] words = text.split(" ");
-            int randomIndex = ThreadLocalRandom.current().nextInt(0, words.length);
-            handleWisdomCommand(event, words[randomIndex]);
-        }
     }
 }
