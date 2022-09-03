@@ -96,9 +96,9 @@ public class PBotService {
         return computeCRC32("public-api" + value + k1 + k21 + "H5SXOYIc00qMXPKJ");
     }
 
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     public synchronized void removeOldToys() {
         dialogs.entrySet()
-                .removeIf(entry -> Duration.between(entry.getValue().getLastUpdate(), LocalDateTime.now()).toMinutes() >= 5);
+                .removeIf(entry -> Duration.between(entry.getValue().getLastUpdate(), LocalDateTime.now()).toMinutes() >= 3);
     }
 }
