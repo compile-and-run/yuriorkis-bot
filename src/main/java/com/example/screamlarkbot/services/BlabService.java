@@ -29,18 +29,24 @@ public class BlabService {
                 .intro(style.getIntro())
                 .query(query)
                 .build();
-        ResponseEntity<BlabResponse> response = restTemplate.postForEntity(URL, request, BlabResponse.class);
-        if (response.hasBody()) {
-            BlabResponse body = response.getBody();
-            if (body.getText() == null || body.getText().isEmpty()) {
-                log.info("response text is empty");
-                return CompletableFuture.completedFuture(null);
-            }
-            return CompletableFuture.completedFuture(body.getQuery() + body.getText());
-        } else {
+
+        ResponseEntity<BlabResponse> response;
+        try {
+            response = restTemplate.postForEntity(URL, request, BlabResponse.class);
+        } catch (Exception e) {
+            log.error("Error occurred while getting a response from blab", e);
+            return CompletableFuture.completedFuture(null);
+        }
+        if (!response.hasBody()) {
             log.info("response body is empty");
             return CompletableFuture.completedFuture(null);
         }
+        BlabResponse body = response.getBody();
+        if (body.getText() == null || body.getText().isEmpty()) {
+            log.info("response text is empty");
+            return CompletableFuture.completedFuture(null);
+        }
+        return CompletableFuture.completedFuture(body.getQuery() + body.getText());
     }
 
 }
