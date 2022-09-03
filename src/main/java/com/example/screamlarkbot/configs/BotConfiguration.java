@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -19,6 +21,7 @@ import java.util.concurrent.Executor;
 @Configuration
 @EnableScheduling
 @EnableAsync
+@EnableRetry
 public class BotConfiguration {
 
     @Value("${screamlark-bot.channel-name}")
@@ -52,16 +55,22 @@ public class BotConfiguration {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        return new RestTemplate(getClientHttpRequestFactory());
+    }
+
+    private SimpleClientHttpRequestFactory getClientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+        // Connect timeout
+        clientHttpRequestFactory.setConnectTimeout(10_000);
+        // Read timeout
+        clientHttpRequestFactory.setReadTimeout(10_000);
+        return clientHttpRequestFactory;
     }
 
     @Bean
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(500);
-        executor.setAwaitTerminationSeconds(5);
+        executor.setThreadNamePrefix("Bot-");
         executor.initialize();
         return executor;
     }

@@ -6,6 +6,7 @@ import com.example.screamlarkbot.models.blab.BlabStyle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +22,9 @@ public class BlabService {
     private final RestTemplate restTemplate;
 
     @Async
+    @Retryable(value = Exception.class, maxAttempts = 10)
     public CompletableFuture<String> generate(BlabStyle style, String query) {
+        log.info("blab is working...");
         if (query.isBlank()) {
             return CompletableFuture.completedFuture(null);
         }
@@ -30,19 +33,13 @@ public class BlabService {
                 .query(query)
                 .build();
 
-        ResponseEntity<BlabResponse> response;
-        try {
-            response = restTemplate.postForEntity(URL, request, BlabResponse.class);
-        } catch (Exception e) {
-            log.error("Error occurred while getting a response from blab", e);
-            return CompletableFuture.completedFuture(null);
-        }
+        ResponseEntity<BlabResponse> response = restTemplate.postForEntity(URL, request, BlabResponse.class);
         if (!response.hasBody()) {
             log.info("response body is empty");
             return CompletableFuture.completedFuture(null);
         }
         BlabResponse body = response.getBody();
-        if (body.getText() == null || body.getText().isEmpty()) {
+        if (body.getText() == null || body.getText().isBlank()) {
             log.info("response text is empty");
             return CompletableFuture.completedFuture(null);
         }
