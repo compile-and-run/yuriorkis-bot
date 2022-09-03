@@ -59,9 +59,9 @@ public class BotConfiguration {
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(2);
+        executor.setMaxPoolSize(8);
         executor.setQueueCapacity(500);
-        executor.setAwaitTerminationSeconds(10);
+        executor.setAwaitTerminationSeconds(5);
         executor.initialize();
         return executor;
     }
