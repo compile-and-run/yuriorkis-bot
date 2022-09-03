@@ -48,52 +48,55 @@ public class BlabMessageHandler {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.NO_STYLE, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleInstructionCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.INSTRUCTION, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleRecipeCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.RECIPE, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleWisdomCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.WISDOM, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleStoryCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.STORY, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleWikiCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.WIKI, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
     private void handleSynopsisCommand(ChannelMessageEvent event, String args) {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
         blabService.generate(BlabStyle.SYNOPSIS, args)
-                .whenComplete((text, t) -> sendReply(channel, username, text));
+                .whenComplete((text, t) -> sendReply(channel, username, text, t));
     }
 
-    private void sendReply(String channel, String username, String text) {
+    private void sendReply(String channel, String username, String text, Throwable throwable) {
+        if (throwable != null) {
+            log.error("Error occurred while getting a response from blab", throwable);
+        }
         if (text == null ) return;
         twitchClient.getChat().sendMessage(channel, Messages.reply(username, text));
     }
