@@ -56,6 +56,7 @@ public class BotConfiguration {
         return new RestTemplate();
     }
 
+    @Bean
     public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
