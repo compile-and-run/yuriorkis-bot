@@ -3,6 +3,7 @@ package com.example.screamlarkbot.services;
 import com.example.screamlarkbot.models.blab.BlabRequest;
 import com.example.screamlarkbot.models.blab.BlabResponse;
 import com.example.screamlarkbot.models.blab.BlabStyle;
+import com.example.screamlarkbot.utils.Emote;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class BlabService {
         BlabResponse body = response.getBody();
         if (body.getText() == null || body.getText().isBlank()) {
             log.info("response text is empty");
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture("Балабоба не принимает запросы на острые темы " + Emote.FEELS_WEAK_MAN);
         }
         var answer = body.getQuery() + body.getText();
         answer = answer.replace("\\s+", " ").trim();
