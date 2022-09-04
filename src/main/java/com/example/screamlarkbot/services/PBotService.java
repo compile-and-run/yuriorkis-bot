@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,9 @@ public class PBotService {
     private final Map<String, Dialog> dialogs = new ConcurrentHashMap<>();
 
     @Async
+    @Retryable(value = Exception.class, maxAttempts = 10)
     public CompletableFuture<String> getAnswer(String username, String message) {
+        log.info("pbot is working...");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 

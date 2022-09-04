@@ -35,7 +35,7 @@ public class PBotMessageHandler {
         var message = event.getMessage();
         if (message.toLowerCase().startsWith("@" + botName)) {
             message = message.substring(botName.length() + 1).trim();
-            pBotService.getAnswer(username, message).whenComplete((answer, t) -> {
+            pBotService.getAnswer(username, message).thenAccept(answer -> {
                 if (answer != null) {
                     twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, answer));
                 }
