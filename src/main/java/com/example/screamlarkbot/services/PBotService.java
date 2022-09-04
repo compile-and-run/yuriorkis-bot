@@ -70,6 +70,7 @@ public class PBotService {
         ResponseEntity<PBotResponse> response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("status code is " + response.getStatusCode());
             throw new RuntimeException("status code is not 200");
         }
 
