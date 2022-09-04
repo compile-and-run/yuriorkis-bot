@@ -40,7 +40,7 @@ public class PBotService {
     private final Map<String, Dialog> dialogs = new ConcurrentHashMap<>();
 
     @Async
-    @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 1000))
+    @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 5000))
     public CompletableFuture<String> getAnswer(String username, String message) {
         log.info("pbot is working...");
         HttpHeaders headers = new HttpHeaders();
