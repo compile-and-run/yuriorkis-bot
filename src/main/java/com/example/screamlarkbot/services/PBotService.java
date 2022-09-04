@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,7 +40,7 @@ public class PBotService {
     private final Map<String, Dialog> dialogs = new ConcurrentHashMap<>();
 
     @Async
-    @Retryable(value = Exception.class, maxAttempts = 10)
+    @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 1000))
     public CompletableFuture<String> getAnswer(String username, String message) {
         log.info("pbot is working...");
         HttpHeaders headers = new HttpHeaders();
@@ -66,12 +67,13 @@ public class PBotService {
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
-        log.info("send response to pbot api " + map);
-        ResponseEntity<PBotResponse> response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
-
-        if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("status code is " + response.getStatusCode());
-            throw new RuntimeException("status code is not 200");
+        log.info("sending response to pbot api " + map);
+        ResponseEntity<PBotResponse> response;
+        try {
+            response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
+        } catch (Exception e) {
+            log.error("exception occurred while getting response form pbot");
+            throw new RuntimeException(e);
         }
 
         if (response.hasBody()) {
