@@ -63,13 +63,16 @@ public class PBotService {
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 
+        log.info("send response to pbot api " + map);
         ResponseEntity<PBotResponse> response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
 
         if (response.hasBody()) {
+            log.info("response from pbot: " + response);
             var answer = response.getBody().getAnswer();
             dialog.addRequestAndAnswer(message, answer);
             return CompletableFuture.completedFuture(answer);
         }
+        log.info("response has no body");
         return CompletableFuture.completedFuture(null);
     }
 
@@ -97,7 +100,7 @@ public class PBotService {
     }
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
-    public synchronized void removeOldToys() {
+    public synchronized void removeOldDialogs() {
         dialogs.entrySet()
                 .removeIf(entry -> Duration.between(entry.getValue().getLastUpdate(), LocalDateTime.now()).toMinutes() >= 3);
     }
