@@ -72,7 +72,7 @@ public class PBotService {
         try {
             response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
         } catch (Exception e) {
-            log.error("exception occurred while getting response form pbot");
+            log.error("exception occurred while getting response from pbot", e);
             throw new RuntimeException(e);
         }
 
