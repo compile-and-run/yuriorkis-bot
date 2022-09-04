@@ -69,6 +69,10 @@ public class PBotService {
         log.info("send response to pbot api " + map);
         ResponseEntity<PBotResponse> response = restTemplate.exchange(PBOT_URL, HttpMethod.POST, entity, PBotResponse.class);
 
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("status code is not 200");
+        }
+
         if (response.hasBody()) {
             log.info("response from pbot: " + response);
             var answer = response.getBody().getAnswer();
