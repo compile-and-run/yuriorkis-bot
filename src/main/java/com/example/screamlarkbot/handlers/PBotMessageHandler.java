@@ -29,6 +29,9 @@ public class PBotMessageHandler {
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::sendReply);
     }
+    
+    // Компайл, принимай, не позорься (я не знаю этого апи, за гов*нокод изви*ни)
+    // ((используй нормальные типы вместо var, а то в браузере даже не напишут, что это))
 
     private void sendReply(ChannelMessageEvent event) {
         var username = event.getUser().getName();
@@ -37,7 +40,9 @@ public class PBotMessageHandler {
             message = message.substring(botName.length() + 1).trim();
             pBotService.getAnswer(username, message).thenAccept(answer -> {
                 if (answer != null) {
-                    twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, answer));
+                    if (username == "CMRDTND") {
+                        twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, "fight2"));
+                    } else twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, answer));
                 }
             });
         }
