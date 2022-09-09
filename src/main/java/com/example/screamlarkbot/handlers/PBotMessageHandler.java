@@ -8,12 +8,14 @@ import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "screamlark-bot.pbot", havingValue = "true")
 @RequiredArgsConstructor
 public class PBotMessageHandler {
 
