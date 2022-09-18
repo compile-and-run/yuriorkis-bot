@@ -33,8 +33,8 @@ public class StdMessageHandler {
 
     private void handleStd(ChannelMessageEvent event) {
         String username = event.getUser().getName();
-        String message = event.getMessage().toLowerCase();
-        if (message.matches(".*[scс][tт][dд].*")) {
+        String message = event.getMessage().toLowerCase().replaceAll("\\s+"," ");
+        if (message.matches(".*(?<!(scream|скрим) ?)[scс][tт][dд].*")) {
             weakViewerService.incrementScore(username);
             twitchClient.getChat().sendMessage(event.getChannel().getName(),
                     Messages.reply(username, "std для неосиляторов " + Emote.MADGE_KNIFE));
@@ -47,7 +47,7 @@ public class StdMessageHandler {
         List<WeakViewer> weakList = weakViewerService.getTop();
 
         if (weakList.isEmpty()) {
-            twitchClient.getChat().sendMessage(channel, "На канале нет неосиляторов " + Emote.PEEPO_CLAP);
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "На канале нет неосиляторов " + Emote.PEEPO_CLAP));
             return;
         }
 
