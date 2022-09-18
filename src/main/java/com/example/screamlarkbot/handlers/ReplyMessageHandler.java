@@ -56,6 +56,7 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
         eventManager.onEvent(UserBanEvent.class, this::handleBan);
+        eventManager.onEvent(ChannelMessageEvent.class, this::handleStd);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -157,5 +158,14 @@ public class ReplyMessageHandler {
         log.info("'{}' was banned", username);
         String response = "%s получил справедливый бан за мнение " + Emote.VERY_POG;
         twitchClient.getChat().sendMessage(channelName, String.format(response, username));
+    }
+
+    private void handleStd(ChannelMessageEvent event) {
+        String username = event.getUser().getName();
+        String message = event.getMessage().toLowerCase();
+        if (message.contains("std") || message.contains("стд")) {
+            twitchClient.getChat().sendMessage(event.getChannel().getName(),
+                    Messages.reply(username, "std для неосиляторов " + Emote.MADGE_KNIFE));
+        }
     }
 }

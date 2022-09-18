@@ -13,7 +13,8 @@ public enum Emote {
     FIGHT2("fight2"),
     STREAML_SMASH("streamlSmash"),
     VERY_POG("VeryPog"),
-    STARE("Stare");
+    STARE("Stare"),
+    MADGE_KNIFE("Madgeknife");
 
     private final String name;
 
