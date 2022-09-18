@@ -163,7 +163,7 @@ public class ReplyMessageHandler {
     private void handleStd(ChannelMessageEvent event) {
         String username = event.getUser().getName();
         String message = event.getMessage().toLowerCase();
-        if (message.matches("[scс][tт][dд]")) {
+        if (message.matches(".*[scс][tт][dд].*")) {
             twitchClient.getChat().sendMessage(event.getChannel().getName(),
                     Messages.reply(username, "std для неосиляторов " + Emote.MADGE_KNIFE));
         }
