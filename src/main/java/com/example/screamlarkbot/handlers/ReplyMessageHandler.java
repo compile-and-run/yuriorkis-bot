@@ -14,7 +14,6 @@ import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -41,9 +40,6 @@ public class ReplyMessageHandler {
 
     private final TwitchClient twitchClient;
 
-    @Value("${screamlark-bot.bot-name}")
-    private String botName;
-
     @PostConstruct
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
@@ -56,7 +52,6 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
         eventManager.onEvent(UserBanEvent.class, this::handleBan);
-        eventManager.onEvent(ChannelMessageEvent.class, this::handleStd);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -158,14 +153,5 @@ public class ReplyMessageHandler {
         log.info("'{}' was banned", username);
         String response = "%s получил справедливый бан за мнение " + Emote.VERY_POG;
         twitchClient.getChat().sendMessage(channelName, String.format(response, username));
-    }
-
-    private void handleStd(ChannelMessageEvent event) {
-        String username = event.getUser().getName();
-        String message = event.getMessage().toLowerCase();
-        if (message.matches(".*[scс][tт][dд].*")) {
-            twitchClient.getChat().sendMessage(event.getChannel().getName(),
-                    Messages.reply(username, "std для неосиляторов " + Emote.MADGE_KNIFE));
-        }
     }
 }
