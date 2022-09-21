@@ -22,6 +22,8 @@ public class StdMessageHandler {
 
     private static final String WEAK_CHECK_COMMAND = "!неосилятор";
 
+    private static final String WEAK_ADD_COMMAND = "!неосилятор++";
+
     private final TwitchClient twitchClient;
 
     private final WeakViewerService weakViewerService;
@@ -32,6 +34,7 @@ public class StdMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::handleStd);
         Commands.registerCommand(eventManager, WEAK_COMMAND, this::handleWeakCommand);
         Commands.registerCommand(eventManager, WEAK_CHECK_COMMAND, this::handleWeakCheckCommand);
+        Commands.registerCommand(eventManager, WEAK_ADD_COMMAND, this::handleWeakAddCommand);
     }
 
     private void handleStd(ChannelMessageEvent event) {
@@ -83,5 +86,34 @@ public class StdMessageHandler {
                     String message = finalArgs + " - осилятор " + Emote.PEEPO_SMART;
                     twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
                 });
+    }
+
+    private void handleWeakAddCommand(ChannelMessageEvent event, String args) {
+        String username = event.getUser().getName();
+        String channel = event.getChannel().getName();
+
+        if (!twitchClient.getMessagingInterface().getChatters(channel).execute().getModerators().contains(username)) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "ты не модератор " + Emote.MADGE_KNIFE));
+            return;
+        }
+
+        if (args.startsWith("@")) {
+            args = args.substring(1);
+        }
+
+        if (args.isBlank()) {
+            args = username;
+        }
+
+        String finalArgs = args.toLowerCase().trim();
+        StringBuilder message = new StringBuilder();
+        weakViewerService.findByName(finalArgs)
+            .ifPresentOrElse(user -> {
+                message.append(finalArgs).append(" становится еще большим неосилятором ").append(Emote.NOOOO);
+            }, () -> {
+                message.append(finalArgs).append(" больше не осилятор ").append(Emote.NOOOO);
+            });
+        weakViewerService.incrementScore(finalArgs);
+        twitchClient.getChat().sendMessage(channel, Messages.reply(username, message.toString()));
     }
 }

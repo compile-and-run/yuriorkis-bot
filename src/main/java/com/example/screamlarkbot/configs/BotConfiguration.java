@@ -39,6 +39,7 @@ public class BotConfiguration {
         var client = TwitchClientBuilder.builder()
                 .withEnableHelix(true)
                 .withEnableChat(true)
+                .withEnableTMI(true)
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
                 .withChatAccount(credential)
