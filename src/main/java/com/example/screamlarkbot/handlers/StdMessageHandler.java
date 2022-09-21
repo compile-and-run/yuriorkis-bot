@@ -74,7 +74,7 @@ public class StdMessageHandler {
             args = username;
         }
 
-        String finalArgs = args;
+        String finalArgs = args.toLowerCase();
         weakViewerService.findByName(args.trim())
                 .ifPresentOrElse(user -> {
                     String message = finalArgs + "(" + user.getScore() + ") - неосилятор " + Emote.NOOOO;
