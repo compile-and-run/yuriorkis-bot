@@ -14,7 +14,9 @@ public enum Emote {
     STREAML_SMASH("streamlSmash"),
     VERY_POG("VeryPog"),
     STARE("Stare"),
-    MADGE_KNIFE("Madgeknife");
+    MADGE_KNIFE("Madgeknife"),
+    PEEPO_SMART("peepoSmart"),
+    NOOOO("NOOOO");
 
     private final String name;
 

@@ -20,6 +20,8 @@ public class StdMessageHandler {
 
     private static final String WEAK_COMMAND = "!неосиляторы";
 
+    private static final String WEAK_CHECK_COMMAND = "!неосилятор";
+
     private final TwitchClient twitchClient;
 
     private final WeakViewerService weakViewerService;
@@ -29,6 +31,7 @@ public class StdMessageHandler {
         EventManager eventManager = twitchClient.getEventManager();
         eventManager.onEvent(ChannelMessageEvent.class, this::handleStd);
         Commands.registerCommand(eventManager, WEAK_COMMAND, this::handleWeakCommand);
+        Commands.registerCommand(eventManager, WEAK_CHECK_COMMAND, this::handleWeakCheckCommand);
     }
 
     private void handleStd(ChannelMessageEvent event) {
@@ -57,5 +60,28 @@ public class StdMessageHandler {
             result.append(i + 1).append(". ").append(viewer.getName()).append("(").append(viewer.getScore()).append(") ");
         }
         twitchClient.getChat().sendMessage(channel, Messages.reply(username, result.toString()));
+    }
+
+    private void handleWeakCheckCommand(ChannelMessageEvent event, String args) {
+        String username = event.getUser().getName();
+        String channel = event.getChannel().getName();
+
+        if (args.startsWith("@")) {
+            args = args.substring(1);
+        }
+
+        if (args.isBlank()) {
+            args = username;
+        }
+
+        String finalArgs = args;
+        weakViewerService.findByName(args.trim())
+                .ifPresentOrElse(user -> {
+                    String message = finalArgs + "(" + user.getScore() + ") - неосилятор " + Emote.NOOOO;
+                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
+                }, () ->{
+                    String message = finalArgs + " - осилятор " + Emote.PEEPO_SMART;
+                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
+                });
     }
 }
