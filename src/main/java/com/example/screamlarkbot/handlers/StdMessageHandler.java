@@ -75,7 +75,7 @@ public class StdMessageHandler {
         }
 
         String finalArgs = args.toLowerCase();
-        weakViewerService.findByName(args.trim())
+        weakViewerService.findByName(finalArgs)
                 .ifPresentOrElse(user -> {
                     String message = finalArgs + "(" + user.getScore() + ") - неосилятор " + Emote.NOOOO;
                     twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
