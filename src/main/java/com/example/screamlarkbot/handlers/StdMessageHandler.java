@@ -8,11 +8,13 @@ import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
+import com.github.twitch4j.common.enums.CommandPermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -21,6 +23,10 @@ public class StdMessageHandler {
     private static final String WEAK_COMMAND = "!неосиляторы";
 
     private static final String WEAK_CHECK_COMMAND = "!неосилятор";
+
+    private static final String WEAK_MANAGE_COMMAND = "!неосилятор+-";
+
+    private static final String WEAK_MANAGE_HELP = "help: !неосилятор+- [++|--] <кол-во> <цель>";
 
     private final TwitchClient twitchClient;
 
@@ -32,6 +38,7 @@ public class StdMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::handleStd);
         Commands.registerCommand(eventManager, WEAK_COMMAND, this::handleWeakCommand);
         Commands.registerCommand(eventManager, WEAK_CHECK_COMMAND, this::handleWeakCheckCommand);
+        Commands.registerCommand(eventManager, WEAK_MANAGE_COMMAND, this::handleWeakManageCommand);
     }
 
     private void handleStd(ChannelMessageEvent event) {
@@ -83,5 +90,73 @@ public class StdMessageHandler {
                     String message = finalArgs + " - осилятор " + Emote.PEEPO_SMART;
                     twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
                 });
+    }
+
+    private void handleWeakManageCommand(ChannelMessageEvent event, String args) {
+        String username = event.getUser().getName();
+        String channel = event.getChannel().getName();
+
+        if (!event.getPermissions().contains(CommandPermission.MODERATOR)) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "ты не модератор " + Emote.MADGE_KNIFE));
+            return;
+        }
+
+        String[] parameters = args.split(" ");
+        if (parameters.length <= 3) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP + " " + Emote.PEEPO_SMART));
+            return;
+        }
+
+        String action = parameters[1];
+        Integer humiliationScore = Integer.parseInt(parameters[2]);
+        String target = parameters[3];
+
+        if (humiliationScore < 0) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "ах ты, любитель негативного! " + Emote.MADGE_KNIFE));
+            return;
+        }
+
+        Optional<WeakViewer> weakViewerOptional = weakViewerService.findByName(target);
+        switch (action) {
+            case "++": {
+                if (!weakViewerOptional.isPresent()) {
+                    weakViewerService.incrementScore(target);
+                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, target + " становится неосилятором (" + humiliationScore + ") " + Emote.NOOOO ));
+                    break;
+                }
+                WeakViewer weakViewer = weakViewerOptional.get();
+
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
+                            target + " укрепляет свое положение неосилятора (" + (humiliationScore + weakViewer.getScore()) + ") " + Emote.NOOOO ));
+                weakViewerService.setScore(target, weakViewer.getScore() + humiliationScore);
+                break;
+            }
+
+            case "--": {
+                if (!weakViewerOptional.isPresent()) {
+                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, target + " итак осилятор! " + Emote.PEEPO_CLAP));
+                    break;
+                }
+                WeakViewer weakViewer = weakViewerOptional.get();
+
+                if (weakViewer.getScore() - humiliationScore <= 0) {
+                    twitchClient.getChat().sendMessage(channel, Messages.reply(username,
+                                target + " прощается! " + Emote.PEEPO_CLAP));
+                    weakViewerService.delete(target);
+                    break;
+                }
+
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
+                            target + " прощается на " + humiliationScore + " единиц! " + Emote.PEEPO_CLAP));
+                weakViewerService.setScore(target, weakViewer.getScore() - humiliationScore);
+                break;
+            }
+
+            case "help":
+            default: {
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP + " " + Emote.PEEPO_SMART));
+                break;
+            }
+        }
     }
 }
