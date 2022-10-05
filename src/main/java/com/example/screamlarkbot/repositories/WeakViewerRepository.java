@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface WeakViewerRepository extends JpaRepository<WeakViewer, Long> {
     Optional<WeakViewer> findByName(String username);
+    void deleteByName(String username);
 }

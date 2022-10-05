@@ -42,12 +42,8 @@ public class WeakViewerService {
     }
 
     @Transactional
-    public void delete(String username) {
-        repository.findByName(username)
-                .ifPresentOrElse(
-                        user -> repository.delete(user),
-                        () -> {}
-                );
+    public void deleteByName(String username) {
+        repository.deleteByName(username);
     }
 
     public List<WeakViewer> getTop() {

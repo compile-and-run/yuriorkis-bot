@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -24,9 +23,9 @@ public class StdMessageHandler {
 
     private static final String WEAK_CHECK_COMMAND = "!неосилятор";
 
-    private static final String WEAK_MANAGE_COMMAND = "!неосилятор+-";
+    private static final String WEAK_MANAGE_COMMAND = "!неосилятор+";
 
-    private static final String WEAK_MANAGE_HELP = "help: !неосилятор+- [++|--] <кол-во> <цель>";
+    private static final String WEAK_MANAGE_HELP = "help: !неосилятор+ <кол-во> <ник>";
 
     private final TwitchClient twitchClient;
 
@@ -97,66 +96,63 @@ public class StdMessageHandler {
         String channel = event.getChannel().getName();
 
         if (!event.getPermissions().contains(CommandPermission.MODERATOR)) {
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "ты не модератор " + Emote.MADGE_KNIFE));
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Ты не модератор " + Emote.MADGE_KNIFE));
             return;
         }
 
         String[] parameters = args.split(" ");
-        if (parameters.length <= 3) {
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP + " " + Emote.PEEPO_SMART));
+        if (parameters.length != 3) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP));
             return;
         }
 
-        String action = parameters[1];
-        Integer humiliationScore = Integer.parseInt(parameters[2]);
-        String target = parameters[3];
+        Integer humiliationScore;
+        try {
+            humiliationScore = Integer.parseInt(parameters[1]);
+        } catch (NumberFormatException e) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP));
+            return;
+        }
+        String target = parameters[2].toLowerCase();
 
-        if (humiliationScore < 0) {
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "ах ты, любитель негативного! " + Emote.MADGE_KNIFE));
+        if (username.equals(target)) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Нельзя менять уровень неосиляторства самому себе " + Emote.MADGE_KNIFE));
             return;
         }
 
-        Optional<WeakViewer> weakViewerOptional = weakViewerService.findByName(target);
-        switch (action) {
-            case "++": {
-                if (!weakViewerOptional.isPresent()) {
-                    weakViewerService.incrementScore(target);
-                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, target + " становится неосилятором (" + humiliationScore + ") " + Emote.NOOOO ));
-                    break;
-                }
-                WeakViewer weakViewer = weakViewerOptional.get();
-
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
-                            target + " укрепляет свое положение неосилятора (" + (humiliationScore + weakViewer.getScore()) + ") " + Emote.NOOOO ));
-                weakViewerService.setScore(target, weakViewer.getScore() + humiliationScore);
-                break;
-            }
-
-            case "--": {
-                if (!weakViewerOptional.isPresent()) {
-                    twitchClient.getChat().sendMessage(channel, Messages.reply(username, target + " итак осилятор! " + Emote.PEEPO_CLAP));
-                    break;
-                }
-                WeakViewer weakViewer = weakViewerOptional.get();
-
-                if (weakViewer.getScore() - humiliationScore <= 0) {
-                    twitchClient.getChat().sendMessage(channel, Messages.reply(username,
-                                target + " прощается! " + Emote.PEEPO_CLAP));
-                    weakViewerService.delete(target);
-                    break;
-                }
-
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
-                            target + " прощается на " + humiliationScore + " единиц! " + Emote.PEEPO_CLAP));
-                weakViewerService.setScore(target, weakViewer.getScore() - humiliationScore);
-                break;
-            }
-
-            case "help":
-            default: {
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username, WEAK_MANAGE_HELP + " " + Emote.PEEPO_SMART));
-                break;
-            }
+        if (humiliationScore == 0) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "MMMM"));
+            return;
         }
+
+        var weakViewerOptional = weakViewerService.findByName(target);
+        weakViewerOptional.ifPresentOrElse(viewer -> {
+            int newScore = viewer.getScore() + humiliationScore;
+            if (newScore <= 0) {
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
+                    target + " был прощен! " + Emote.PEEPO_CLAP));
+                weakViewerService.deleteByName(target);
+                return;
+            }
+            weakViewerService.setScore(target, newScore);
+            if (newScore < viewer.getScore()) {
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username,
+                    target + " был прощен на " + Math.abs(humiliationScore) + " единиц! " + Emote.PEEPO_CLAP));
+                return;
+            }
+            if (newScore > viewer.getScore()) {
+                String message = target + " становится еще большим неосилятором (" + newScore + ") " + Emote.NOOOO;
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
+            }
+        }, () -> {
+            if (humiliationScore > 0) {
+                weakViewerService.setScore(target, humiliationScore);
+                String message = target + " становится неосилятором (" + humiliationScore + ") " + Emote.NOOOO;
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
+            } else {
+                String message = target + " уже осилятор! " + Emote.PEEPO_SMART;
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, message));
+            }
+        });
     }
 }
