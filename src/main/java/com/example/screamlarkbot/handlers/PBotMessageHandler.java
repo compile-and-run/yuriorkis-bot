@@ -34,7 +34,7 @@ public class PBotMessageHandler {
 
     private void sendReply(ChannelMessageEvent event) {
         var username = event.getUser().getName();
-        if (username.equals("CMRDTND")) {
+        if (username.equals("cmrdtnd")) {
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, "fight2"));
         }
         var message = event.getMessage();
