@@ -29,6 +29,27 @@ public class WeakViewerService {
                 );
     }
 
+    @Transactional
+    public void setScore(String username, Integer score) {
+        repository.findByName(username)
+                .ifPresentOrElse(
+                        user -> user.setScore(score),
+                        () -> repository.save(WeakViewer.builder()
+                                .name(username)
+                                .score(score)
+                                .build())
+                );
+    }
+
+    @Transactional
+    public void delete(String username) {
+        repository.findByName(username)
+                .ifPresentOrElse(
+                        user -> repository.delete(user),
+                        () -> {}
+                );
+    }
+
     public List<WeakViewer> getTop() {
         return repository.findAll(Sort.by(Sort.Direction.DESC, "score"))
                 .stream()
