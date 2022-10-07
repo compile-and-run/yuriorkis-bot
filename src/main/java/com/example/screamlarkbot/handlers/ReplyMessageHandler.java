@@ -90,12 +90,13 @@ public class ReplyMessageHandler {
 
     private void detectNewViewers(ChannelMessageEvent event) {
         String username = event.getUser().getName();
+        String id = event.getUser().getId();
         if (!event.isDesignatedFirstMessage()) {
             return;
         }
         log.info("'{}' sent their first message", username);
 
-        LocalDateTime createdAt = getCreatedAt(username);
+        LocalDateTime createdAt = getCreatedAt(id);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() < MIN_DAYS_AFTER_CREATION) {
             String response = "%s Детектор сани зафиксировал подозрительную активность! %s Аккаунт %s был создан %s!";
@@ -112,9 +113,10 @@ public class ReplyMessageHandler {
 
     private void handleFollow(FollowEvent event) {
         String username = event.getUser().getName();
+        String id = event.getUser().getId();
         log.info("'{}' followed", username);
 
-        LocalDateTime createdAt = getCreatedAt(username);
+        LocalDateTime createdAt = getCreatedAt(id);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
             String response = "Спасибо за фоллоу, добро пожаловать! " + Emote.PEEPO_CLAP;
@@ -122,10 +124,14 @@ public class ReplyMessageHandler {
         }
     }
 
-    private LocalDateTime getCreatedAt(String username) {
-        UserList userList = twitchClient.getHelix().getUsers(null, null, List.of(username)).execute();
-        User user = userList.getUsers().get(0);
-        return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
+    private LocalDateTime getCreatedAt(String id) {
+        try {
+            UserList userList = twitchClient.getHelix().getUsers(null, List.of(id), null).execute();
+            User user = userList.getUsers().get(0);
+            return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
+        } catch (Exception e) {
+            return LocalDateTime.now();
+        }
     }
 
     private void handleSubscription(SubscriptionEvent event) {
