@@ -34,11 +34,11 @@ public class PBotMessageHandler {
 
     private void sendReply(ChannelMessageEvent event) {
         var username = event.getUser().getName();
-        if (username.equals("cmrdtnd")) {
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, "fight2"));
-        }
         var message = event.getMessage();
         if (message.toLowerCase().startsWith("@" + botName)) {
+            if (username.equals("cmrdtnd")) {
+                twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, "fight2"));
+            }
             message = message.substring(botName.length() + 1).trim();
             pBotService.getAnswer(username, message).thenAccept(answer -> {
                 if (answer != null) {
