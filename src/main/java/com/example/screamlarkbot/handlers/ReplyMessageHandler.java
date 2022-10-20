@@ -5,10 +5,7 @@ import com.example.screamlarkbot.utils.Messages;
 import com.example.screamlarkbot.utils.TwitchHelper;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
-import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
-import com.github.twitch4j.chat.events.channel.FollowEvent;
-import com.github.twitch4j.chat.events.channel.SubscriptionEvent;
-import com.github.twitch4j.chat.events.channel.UserBanEvent;
+import com.github.twitch4j.chat.events.channel.*;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +41,7 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
         eventManager.onEvent(UserBanEvent.class, this::handleBan);
+        eventManager.onEvent(ChannelJoinEvent.class, this::detectTurborium);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -118,5 +116,14 @@ public class ReplyMessageHandler {
         log.info("'{}' was banned", username);
         String response = "%s получил справедливый бан за мнение " + Emote.VERY_POG;
         twitchClient.getChat().sendMessage(channelName, String.format(response, username));
+    }
+
+    private void detectTurborium(ChannelJoinEvent event) {
+        String channelName = event.getChannel().getName();
+        String username = event.getUser().getName();
+        log.info("'{}' joined the channel", username);
+        if ("turborium".equals(username)) {
+            twitchClient.getChat().sendMessage(channelName, Emote.OOOO + " Внимание! Турбориум зашел на стриме! " + Emote.OOOO);
+        }
     }
 }

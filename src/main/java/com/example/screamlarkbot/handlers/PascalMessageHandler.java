@@ -47,7 +47,7 @@ public class PascalMessageHandler {
         try {
             String finalArgs = args.toLowerCase().trim();
             if ("turborium".equals(finalArgs)) {
-                String response = "%s Обнаружен главный паскаленок! %s";
+                String response = "Turborium - главный паскаленок! %s";
                 twitchClient.getChat().sendMessage(channel, Messages.reply(username, String.format(response, Emote.OOOO, Emote.OOOO)));
             } else if (pascalService.checkByUsername(finalArgs)) {
                 String response = "%s Паскаленок обнаружен! %s Пользователь %s фолловер канала Turborium!";
