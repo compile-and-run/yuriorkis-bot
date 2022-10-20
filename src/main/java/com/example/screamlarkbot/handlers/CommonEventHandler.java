@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ReplyMessageHandler {
+public class CommonEventHandler {
 
     private static final String HELP_COMMAND = "!help";
     private static final String HELP_URL = "https://github.com/compile-and-run/screamlark-bot/blob/main/README.md";
