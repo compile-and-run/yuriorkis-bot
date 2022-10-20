@@ -24,6 +24,7 @@ public class PascalService {
     }
 
     public boolean checkByUserId(String userId) {
+        if (TURBORIUM_ID.equals(userId)) return true;
         var list = twitchClient.getHelix().getFollowers(null, userId, TURBORIUM_ID, null, null).execute();
         return !list.getFollows().isEmpty();
     }
