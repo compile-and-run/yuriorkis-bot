@@ -72,6 +72,8 @@ public class StdMessageHandler {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
 
+        args = args.trim();
+
         if (args.startsWith("@")) {
             args = args.substring(1);
         }

@@ -7,6 +7,7 @@ import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
+import com.github.twitch4j.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,8 @@ public class PascalMessageHandler {
         String username = event.getUser().getName();
         String channel = event.getChannel().getName();
 
+        args = args.trim();
+
         if (args.startsWith("@")) {
             args = args.substring(1);
         }
@@ -41,13 +44,17 @@ public class PascalMessageHandler {
             args = username;
         }
 
-        String finalArgs = args.toLowerCase().trim();
-        if (pascalService.checkByUsername(finalArgs)) {
-            String response = "%s Паскаленок обнаружен! %s Пользователь %s фолловер канала Turborium!";
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, String.format(response, Emote.OOOO, Emote.OOOO, args)));
-        } else {
-            String response = "%s не паскаленок %s";
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, String.format(response, args, Emote.PEEPO_SMART)));
+        try {
+            String finalArgs = args.toLowerCase().trim();
+            if (pascalService.checkByUsername(finalArgs)) {
+                String response = "%s Паскаленок обнаружен! %s Пользователь %s фолловер канала Turborium!";
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, String.format(response, Emote.OOOO, Emote.OOOO, args)));
+            } else {
+                String response = "%s не паскаленок %s";
+                twitchClient.getChat().sendMessage(channel, Messages.reply(username, String.format(response, args, Emote.PEEPO_SMART)));
+            }
+        } catch (NotFoundException e) {
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Такого пользователя не существует " + Emote.FEELS_WEAK_MAN));
         }
     }
 }
