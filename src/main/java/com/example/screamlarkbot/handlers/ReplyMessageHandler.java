@@ -123,7 +123,7 @@ public class ReplyMessageHandler {
         String username = event.getUser().getName();
         log.info("'{}' joined the channel", username);
         if ("turborium".equals(username)) {
-            twitchClient.getChat().sendMessage(channelName, Emote.OOOO + " Внимание! Турбориум зашел на стриме! " + Emote.OOOO);
+            twitchClient.getChat().sendMessage(channelName, Emote.OOOO + " Внимание! Турбориум зашел на стрим! " + Emote.OOOO);
         }
     }
 }
