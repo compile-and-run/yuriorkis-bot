@@ -2,6 +2,7 @@ package com.example.screamlarkbot.handlers;
 
 import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
+import com.example.screamlarkbot.utils.TwitchHelper;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
@@ -10,8 +11,6 @@ import com.github.twitch4j.chat.events.channel.SubscriptionEvent;
 import com.github.twitch4j.chat.events.channel.UserBanEvent;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
-import com.github.twitch4j.helix.domain.User;
-import com.github.twitch4j.helix.domain.UserList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,10 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,9 +29,6 @@ public class ReplyMessageHandler {
 
     private static final String HELP_COMMAND = "!help";
     private static final String HELP_URL = "https://github.com/compile-and-run/screamlark-bot/blob/main/README.md";
-    private static final String DATE_PATTERN = "dd.MM.yyyy";
-    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Moscow");
-
     private static final int MIN_DAYS_AFTER_CREATION = 7;
 
     private final TwitchClient twitchClient;
@@ -46,7 +39,6 @@ public class ReplyMessageHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
         eventManager.onEvent(ChannelMessageEvent.class, this::processHelp);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
-        eventManager.onEvent(ChannelMessageEvent.class, this::detectNewViewers);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
         eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
@@ -88,49 +80,16 @@ public class ReplyMessageHandler {
         }
     }
 
-    private void detectNewViewers(ChannelMessageEvent event) {
-        String username = event.getUser().getName();
-        String id = event.getUser().getId();
-        if (!event.isDesignatedFirstMessage()) {
-            return;
-        }
-        log.info("'{}' sent their first message", username);
-
-        LocalDateTime createdAt = getCreatedAt(id);
-
-        if (Duration.between(createdAt, LocalDateTime.now()).toDays() < MIN_DAYS_AFTER_CREATION) {
-            String response = "%s Детектор сани зафиксировал подозрительную активность! %s Аккаунт %s был создан %s!";
-
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
-
-            response = String.format(response, Emote.OOOO, Emote.OOOO, username, createdAt.format(dateFormatter));
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
-        } else {
-            String response = "Привет, новый зритель! " + Emote.FROG_WAVE;
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
-        }
-    }
-
     private void handleFollow(FollowEvent event) {
         String username = event.getUser().getName();
         String id = event.getUser().getId();
         log.info("'{}' followed", username);
 
-        LocalDateTime createdAt = getCreatedAt(id);
+        LocalDateTime createdAt = TwitchHelper.getCreatedAt(twitchClient, id);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
             String response = "Спасибо за фоллоу, добро пожаловать! " + Emote.PEEPO_CLAP;
             twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
-        }
-    }
-
-    private LocalDateTime getCreatedAt(String id) {
-        try {
-            UserList userList = twitchClient.getHelix().getUsers(null, List.of(id), null).execute();
-            User user = userList.getUsers().get(0);
-            return LocalDateTime.ofInstant(user.getCreatedAt(), ZONE_ID);
-        } catch (Exception e) {
-            return LocalDateTime.now();
         }
     }
 
