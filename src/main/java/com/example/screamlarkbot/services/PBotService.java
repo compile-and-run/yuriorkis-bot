@@ -43,6 +43,11 @@ public class PBotService {
     @Retryable(value = Exception.class, maxAttempts = 10, backoff = @Backoff(delay = 5000))
     public CompletableFuture<String> getAnswer(String username, String message) {
         log.info("pbot is working...");
+        if (message == null || message.isBlank()) {
+            log.warn("PBot cannot process an empty request");
+            return CompletableFuture.completedFuture(null);
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
