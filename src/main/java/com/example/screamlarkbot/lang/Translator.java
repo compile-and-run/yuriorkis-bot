@@ -13,8 +13,13 @@ public class Translator {
 
     private final ReloadableResourceBundleMessageSource messageSource;
 
-    public String toLocale(String messageCode) {
-        Locale locale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(messageCode, null, locale);
+    private Locale currentLocale = Locale.forLanguageTag("ru");
+
+    public synchronized void setLocale(Locale locale) {
+        this.currentLocale = locale;
+    }
+
+    public synchronized String toLocale(String messageCode) {
+        return messageSource.getMessage(messageCode, null, currentLocale);
     }
 }

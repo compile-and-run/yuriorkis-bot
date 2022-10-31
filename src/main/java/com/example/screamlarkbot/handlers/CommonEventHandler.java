@@ -13,7 +13,6 @@ import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -74,10 +73,10 @@ public class CommonEventHandler {
         if (isMod) {
             args = args.trim();
             if ("en".equals(args)) {
-                LocaleContextHolder.setLocale(Locale.forLanguageTag("en"));
+                translator.setLocale(Locale.forLanguageTag("en"));
                 twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Bloody hell, mate! I speak English! VeryBased"));
             } else if ("ru".equals(args)) {
-                LocaleContextHolder.setLocale(Locale.forLanguageTag("ru"));
+                translator.setLocale(Locale.forLanguageTag("ru"));
                 twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Теперь я говорю по-русски VeryPog"));
             } else {
                 String response = translator.toLocale("unknownLang");
