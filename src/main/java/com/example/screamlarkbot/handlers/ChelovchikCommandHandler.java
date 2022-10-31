@@ -7,12 +7,14 @@ import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "screamlark-bot.chelovchik", havingValue = "true")
 @RequiredArgsConstructor
 public class ChelovchikCommandHandler {
 

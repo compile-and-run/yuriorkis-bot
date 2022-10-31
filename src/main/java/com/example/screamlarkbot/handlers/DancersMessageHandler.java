@@ -1,9 +1,9 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.models.dancer.DancerViewer;
 import com.example.screamlarkbot.services.DancerViewerService;
 import com.example.screamlarkbot.utils.Commands;
-import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
@@ -18,11 +18,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DancersMessageHandler {
 
-    private static final String DANCERS_COMMAND = "!танцоры";
+    private static final String DANCERS_COMMAND = "!dancers";
 
     private final TwitchClient twitchClient;
 
     private final DancerViewerService dancerViewerService;
+
+    private final Translator translator;
 
     @PostConstruct
     public void init() {
@@ -45,11 +47,13 @@ public class DancersMessageHandler {
         List<DancerViewer> dancersList = dancerViewerService.getTop();
 
         if (dancersList.isEmpty()) {
-            twitchClient.getChat().sendMessage(channel, Messages.reply(username, "На канале нет танцоров " + Emote.FEELS_WEAK_MAN));
+            String response = translator.toLocale("dancersEmpty");
+            twitchClient.getChat().sendMessage(channel, Messages.reply(username, response));
             return;
         }
 
-        StringBuilder result = new StringBuilder("Топ-5 танцоров канала: ");
+        String title = translator.toLocale("dancersTop");
+        StringBuilder result = new StringBuilder(title + " ");
         for (int i = 0; i < dancersList.size(); i++) {
             DancerViewer viewer = dancersList.get(i);
             result.append(i + 1).append(". ").append(viewer.getName()).append("(").append(viewer.getScore()).append(") ");

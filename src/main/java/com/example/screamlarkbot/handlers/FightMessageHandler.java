@@ -1,5 +1,6 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.models.fight.DuelRequest;
 import com.example.screamlarkbot.models.fight.Fighter;
 import com.example.screamlarkbot.services.FightService;
@@ -35,6 +36,8 @@ public class FightMessageHandler {
     @Value("${screamlark-bot.bot-name}")
     private String botName;
 
+    private final Translator translator;
+
     @PostConstruct
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
@@ -61,7 +64,7 @@ public class FightMessageHandler {
             }
 
             if (opponent.equals(botName.toLowerCase())) {
-                String response = "Какое плохое зло я тебе сделал? Зачем ты так со мной? " + Emote.FEELS_WEAK_MAN;
+                String response = translator.toLocale("duelWithBot");
                 twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
                 return;
             }
@@ -73,17 +76,17 @@ public class FightMessageHandler {
     }
 
     private void onAccept(String channelName, DuelRequest duelRequest) {
-        String response = "%s принял вызов от %s! Да начнется битва! " + Emote.FIGHT + " " + Emote.FIGHT2;
+        String response = translator.toLocale("duelAccept");
         response = String.format(response, duelRequest.getOpponent(), duelRequest.getRequester());
         twitchClient.getChat().sendMessage(channelName, response);
 
-        response = "Используйте эти смайлы, чтобы ударить: %s %s %s";
+        response = translator.toLocale("duelRules");
         response = String.format(response, Emote.FIGHT, Emote.FIGHT2, Emote.STREAML_SMASH);
         twitchClient.getChat().sendMessage(channelName, response);
     }
 
     private void onAdd(String channelName, DuelRequest duelRequest) {
-        String response = "%s вызывает тебя на дуэль! Отправь %s %s в чат, чтобы принять вызов! " + Emote.FIGHT;
+        String response = translator.toLocale("duelRequest");
         response = String.format(response, duelRequest.getRequester(), DUEL_COMMAND, duelRequest.getRequester());
         twitchClient.getChat().sendMessage(channelName, Messages.reply(duelRequest.getOpponent(), response));
     }
@@ -106,13 +109,13 @@ public class FightMessageHandler {
     }
 
     private void onDamage(String channelName, Fighter puncher, Fighter fighter, int damage) {
-        String response = "%s(%s) ударил %s(%s) и отнял %s hp!";
+        String response = translator.toLocale("duelDamage");
         response = String.format(response, puncher.getUsername(), puncher.getHp(), fighter.getUsername(), fighter.getHp(), damage);
         twitchClient.getChat().sendMessage(channelName, response);
     }
 
     private void onKnockout(String channelName, Fighter winner, Fighter looser, boolean isMod) {
-        String response = "%s нокаутировал %s! " + Emote.OOOO;
+        String response = translator.toLocale("duelKnockOut");
         response = String.format(response, winner.getUsername(), looser.getUsername());
         twitchClient.getChat().sendMessage(channelName, response);
 

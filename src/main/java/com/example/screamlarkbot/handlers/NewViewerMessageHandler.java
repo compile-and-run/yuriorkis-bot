@@ -1,5 +1,6 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.services.PascalService;
 import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
@@ -26,6 +27,8 @@ public class NewViewerMessageHandler {
     private final TwitchClient twitchClient;
 
     private final PascalService pascalService;
+
+    private final Translator translator;
 
     @PostConstruct
     public void init() {
@@ -59,7 +62,7 @@ public class NewViewerMessageHandler {
             return;
         }
 
-        String response = "Привет, новый зритель! " + Emote.FROG_WAVE;
+        String response = translator.toLocale("newViewer");
         twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
     }
 }

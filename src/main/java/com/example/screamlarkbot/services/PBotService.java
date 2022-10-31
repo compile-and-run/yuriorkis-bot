@@ -5,6 +5,7 @@ import com.example.screamlarkbot.models.pbot.PBotResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,8 +57,11 @@ public class PBotService {
         map.add("request", message);
         map.add("bot_name", botName);
         map.add("user_name", username);
-        map.add("dialog_lang", "ru");
-
+        if (LocaleContextHolder.getLocale().equals(Locale.ENGLISH)) {
+            map.add("dialog_lang", "en");
+        } else {
+            map.add("dialog_lang", "ru");
+        }
         Dialog dialog = dialogs.computeIfAbsent(username, key -> new Dialog());
         map.add("dialog_id", dialog.getDialogId());
 
