@@ -12,23 +12,21 @@ import com.github.twitch4j.common.enums.CommandPermission;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.pubsub.domain.PollData;
-import com.github.twitch4j.pubsub.domain.PredictionOutcome;
-import com.github.twitch4j.pubsub.domain.PredictionResult;
 import com.github.twitch4j.pubsub.events.PollsEvent;
 import com.github.twitch4j.pubsub.events.PredictionCreatedEvent;
 import com.github.twitch4j.pubsub.events.PredictionUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,6 +45,8 @@ public class CommonEventHandler {
 
     @Value("${screamlark-bot.channel-name}")
     private String channelName;
+
+    private Set<String> followerIds = ConcurrentHashMap.newKeySet();
 
     @PostConstruct
     public void init() {
@@ -120,12 +120,23 @@ public class CommonEventHandler {
         String id = event.getUser().getId();
         log.info("'{}' followed", username);
 
+        if (followerIds.contains(id)) {
+            return;
+        }
+        followerIds.add(id);
+
         LocalDateTime createdAt = TwitchHelper.getCreatedAt(twitchClient, id);
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
             String response = translator.toLocale("follow");
             twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
         }
+    }
+
+    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
+    protected void clearFollowerCache() {
+        followerIds.clear();
+        log.info("follower cache has been cleared");
     }
 
     private void handleSubscription(SubscriptionEvent event) {
