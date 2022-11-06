@@ -57,6 +57,7 @@ public class BotConfiguration {
         var userList = client.getHelix().getUsers(accessToken, null, List.of(channelName)).execute();
         var channelId = userList.getUsers().get(0).getId();
         client.getPubSub().listenForPollEvents(null, channelId);
+        client.getPubSub().listenForChannelPredictionsEvents(null, channelId);
 
         client.getChat().joinChannel(channelName);
         client.getChat().sendMessage(channelName, Emote.FROG_WAVE.toString());

@@ -12,7 +12,11 @@ import com.github.twitch4j.common.enums.CommandPermission;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import com.github.twitch4j.pubsub.domain.PollData;
+import com.github.twitch4j.pubsub.domain.PredictionOutcome;
+import com.github.twitch4j.pubsub.domain.PredictionResult;
 import com.github.twitch4j.pubsub.events.PollsEvent;
+import com.github.twitch4j.pubsub.events.PredictionCreatedEvent;
+import com.github.twitch4j.pubsub.events.PredictionUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +62,8 @@ public class CommonEventHandler {
         eventManager.onEvent(UserBanEvent.class, this::handleBan);
         eventManager.onEvent(ChannelJoinEvent.class, this::detectTurborium);
         eventManager.onEvent(PollsEvent.class, this::handlePoll);
+        eventManager.onEvent(PredictionCreatedEvent.class, this::handlePredictionCreate);
+        eventManager.onEvent(PredictionUpdatedEvent.class, this::handlePredictionUpdated);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -189,5 +195,31 @@ public class CommonEventHandler {
             .filter(pollChoice -> Objects.equals(pollChoice.getTotalVoters(), max.get().getTotalVoters()))
             .map(choice -> choice.getTitle() + "(" + choice.getVotes().getTotal() + ")")
             .collect(Collectors.joining(", "));
+    }
+
+    private void handlePredictionCreate(PredictionCreatedEvent event) {
+        String predictionName = event.getEvent().getTitle();
+        log.info("Prediction {} has been started", predictionName);
+        var response = translator.toLocale("predictionCreate");
+        twitchClient.getChat().sendMessage(channelName, String.format(response, predictionName));
+    }
+
+    private void handlePredictionUpdated(PredictionUpdatedEvent event) {
+        String predictionName = event.getEvent().getTitle();
+        log.info("Prediction {} has been updated", predictionName);
+        if ("RESOLVED".equals(event.getEvent().getStatus())) {
+            var response = translator.toLocale("predictionComplete");
+            var outcomeId = event.getEvent().getWinningOutcomeId();
+            var outcome = event.getEvent().getOutcomes().stream()
+                .filter(o -> Objects.equals(o.getId(), outcomeId))
+                .findAny();
+            if (outcome.isEmpty()) {
+                throw new RuntimeException("cannot find prediction outcome");
+            }
+            twitchClient.getChat().sendMessage(channelName, String.format(response, predictionName, outcome.get().getTitle()));
+        } else if ("CANCELED".equals(event.getEvent().getStatus())) {
+            var response = translator.toLocale("predictionCancel");
+            twitchClient.getChat().sendMessage(channelName, String.format(response, predictionName));
+        }
     }
 }
