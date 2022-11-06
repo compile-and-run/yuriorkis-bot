@@ -11,15 +11,20 @@ import com.github.twitch4j.chat.events.channel.*;
 import com.github.twitch4j.common.enums.CommandPermission;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
+import com.github.twitch4j.pubsub.domain.PollData;
+import com.github.twitch4j.pubsub.events.PollsEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -36,6 +41,9 @@ public class CommonEventHandler {
 
     private final Translator translator;
 
+    @Value("${screamlark-bot.channel-name}")
+    private String channelName;
+
     @PostConstruct
     public void init() {
         EventManager eventManager = twitchClient.getEventManager();
@@ -49,10 +57,10 @@ public class CommonEventHandler {
         eventManager.onEvent(ChannelGoOfflineEvent.class, this::handleGoOffline);
         eventManager.onEvent(UserBanEvent.class, this::handleBan);
         eventManager.onEvent(ChannelJoinEvent.class, this::detectTurborium);
+        eventManager.onEvent(PollsEvent.class, this::handlePoll);
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
-        String channelName = event.getChannel().getName();
         String permissions = event.getPermissions().toString();
         String username = event.getUser().getName();
         String message = event.getMessage();
@@ -67,20 +75,19 @@ public class CommonEventHandler {
     }
 
     private void processLang(ChannelMessageEvent event, String args) {
-        String channel = event.getChannel().getName();
         String username = event.getUser().getName();
         boolean isMod = event.getPermissions().contains(CommandPermission.MODERATOR);
         if (isMod) {
             args = args.trim();
             if ("en".equals(args)) {
                 translator.setLocale(Locale.forLanguageTag("en"));
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Bloody hell, mate! I speak English! VeryBased"));
+                twitchClient.getChat().sendMessage(channelName, Messages.reply(username, "Bloody hell, mate! I speak English! VeryBased"));
             } else if ("ru".equals(args)) {
                 translator.setLocale(Locale.forLanguageTag("ru"));
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username, "Теперь я говорю по-русски VeryPog"));
+                twitchClient.getChat().sendMessage(channelName, Messages.reply(username, "Теперь я говорю по-русски VeryPog"));
             } else {
                 String response = translator.toLocale("unknownLang");
-                twitchClient.getChat().sendMessage(channel, Messages.reply(username, response));
+                twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
             }
         }
     }
@@ -98,7 +105,7 @@ public class CommonEventHandler {
             String response = IntStream.range(0, (int) lizardNumber)
                     .mapToObj(n -> Emote.LIZARD_PLS.toString())
                     .collect(Collectors.joining(" "));
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), response);
+            twitchClient.getChat().sendMessage(channelName, response);
         }
     }
 
@@ -111,7 +118,7 @@ public class CommonEventHandler {
 
         if (Duration.between(createdAt, LocalDateTime.now()).toDays() > MIN_DAYS_AFTER_CREATION) {
             String response = translator.toLocale("follow");
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
+            twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
         }
     }
 
@@ -119,25 +126,22 @@ public class CommonEventHandler {
         String username = event.getUser().getName();
         log.info("'{}' subscribed", username);
         String response = translator.toLocale("sub");
-        twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
+        twitchClient.getChat().sendMessage(channelName, Messages.reply(username, response));
     }
 
     private void handleGoLive(ChannelGoLiveEvent event) {
-        String channelName = event.getChannel().getName();
         log.info("'{}' is live", channelName);
         String response = translator.toLocale("helloStreamer");
         twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, response));
     }
 
     private void handleGoOffline(ChannelGoOfflineEvent event) {
-        String channelName = event.getChannel().getName();
         log.info("'{}' is offline", channelName);
         String response = translator.toLocale("buyStreamer");
         twitchClient.getChat().sendMessage(channelName, Messages.reply(channelName, response));
     }
 
     private void handleBan(UserBanEvent event) {
-        String channelName = event.getChannel().getName();
         String username = event.getUser().getName();
         log.info("'{}' was banned", username);
         String response = translator.toLocale("ban");
@@ -145,11 +149,45 @@ public class CommonEventHandler {
     }
 
     private void detectTurborium(ChannelJoinEvent event) {
-        String channelName = event.getChannel().getName();
         String username = event.getUser().getName();
         log.info("'{}' joined the channel", username);
         if ("turborium".equals(username)) {
             twitchClient.getChat().sendMessage(channelName, Emote.OOOO + " Внимание! Турбориум зашел на стрим! " + Emote.OOOO);
         }
+    }
+
+    private void handlePoll(PollsEvent event) {
+        String pollName = event.getData().getTitle();
+        switch (event.getType()) {
+            case POLL_CREATE:
+                log.info("Poll {} has been started", pollName);
+                var response = translator.toLocale("pollCreate");
+                twitchClient.getChat().sendMessage(channelName, String.format(response, pollName));
+                break;
+            case POLL_COMPLETE:
+                log.info("Poll {} has been completed", pollName);
+                response = translator.toLocale("pollComplete");
+                twitchClient.getChat().sendMessage(channelName, String.format(response, pollName, getPollResult(event.getData())));
+                break;
+            case POLL_TERMINATE:
+                log.info("Poll {} has been terminated", pollName);
+                response = translator.toLocale("pollTerminate");
+                twitchClient.getChat().sendMessage(channelName, String.format(response, pollName));
+                break;
+            default:
+        }
+    }
+
+    private String getPollResult(PollData pollData) {
+        var max = pollData.getChoices().stream()
+            .max(Comparator.comparingLong(pollChoice -> pollChoice.getVotes().getTotal()));
+        if (max.isEmpty()) {
+            throw new RuntimeException("Exception occurred while computing poll result.");
+        }
+        return pollData.getChoices()
+            .stream()
+            .filter(pollChoice -> Objects.equals(pollChoice.getTotalVoters(), max.get().getTotalVoters()))
+            .map(choice -> choice.getTitle() + "(" + choice.getVotes().getTotal() + ")")
+            .collect(Collectors.joining(", "));
     }
 }

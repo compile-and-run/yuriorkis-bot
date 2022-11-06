@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
@@ -43,6 +44,7 @@ public class BotConfiguration {
         var client = TwitchClientBuilder.builder()
                 .withEnableHelix(true)
                 .withEnableChat(true)
+                .withEnablePubSub(true)
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
                 .withChatAccount(credential)
@@ -51,6 +53,10 @@ public class BotConfiguration {
 
         client.getClientHelper().enableFollowEventListener(channelName);
         client.getClientHelper().enableStreamEventListener(channelName);
+
+        var userList = client.getHelix().getUsers(accessToken, null, List.of(channelName)).execute();
+        var channelId = userList.getUsers().get(0).getId();
+        client.getPubSub().listenForPollEvents(null, channelId);
 
         client.getChat().joinChannel(channelName);
         client.getChat().sendMessage(channelName, Emote.FROG_WAVE.toString());
