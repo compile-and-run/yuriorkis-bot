@@ -201,6 +201,9 @@ public class CommonEventHandler {
         if (max.isEmpty()) {
             throw new RuntimeException("Exception occurred while computing poll result.");
         }
+        if (max.get().getVotes().getTotal() == 0) {
+            return translator.toLocale("pollEmpty");
+        }
         return pollData.getChoices()
             .stream()
             .filter(pollChoice -> Objects.equals(pollChoice.getTotalVoters(), max.get().getTotalVoters()))
