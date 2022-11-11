@@ -1,12 +1,13 @@
 package com.example.screamlarkbot.lang;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.i18n.LocaleContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class Translator {
@@ -17,6 +18,7 @@ public class Translator {
 
     public synchronized void setLocale(Locale locale) {
         this.currentLocale = locale;
+        log.info("Current locale: {}", locale);
     }
 
     public synchronized String toLocale(String messageCode) {
