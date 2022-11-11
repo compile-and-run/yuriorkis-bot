@@ -46,7 +46,7 @@ public class CommonEventHandler {
     @Value("${screamlark-bot.channel-name}")
     private String channelName;
 
-    private Set<String> followerIds = ConcurrentHashMap.newKeySet();
+    private final Set<String> followerIds = ConcurrentHashMap.newKeySet();
 
     @PostConstruct
     public void init() {

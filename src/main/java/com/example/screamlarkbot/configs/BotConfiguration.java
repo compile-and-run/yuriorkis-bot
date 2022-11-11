@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.retry.annotation.EnableRetry;
@@ -18,7 +17,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Executor;
 
 @Slf4j
@@ -39,7 +37,6 @@ public class BotConfiguration {
 
     @Bean
     public TwitchClient twitchClient() {
-        LocaleContextHolder.setDefaultLocale(Locale.forLanguageTag("ru"));
         OAuth2Credential credential = new OAuth2Credential("twitch", accessToken);
         var client = TwitchClientBuilder.builder()
                 .withEnableHelix(true)
@@ -90,7 +87,6 @@ public class BotConfiguration {
     public ReloadableResourceBundleMessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setBasename("classpath:messages");
-        messageSource.setCacheSeconds(3600);
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
