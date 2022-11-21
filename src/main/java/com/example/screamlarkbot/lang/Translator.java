@@ -16,6 +16,10 @@ public class Translator {
 
     private Locale currentLocale = Locale.forLanguageTag("ru");
 
+    public Locale getLocale() {
+        return currentLocale;
+    }
+
     public synchronized void setLocale(Locale locale) {
         this.currentLocale = locale;
         log.info("Current locale: {}", locale);

@@ -1,5 +1,6 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.services.PBotService;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
@@ -35,10 +36,6 @@ public class PBotMessageHandler {
     private void sendReply(ChannelMessageEvent event) {
         var username = event.getUser().getName();
         var message = event.getMessage();
-        if (username.equals("cmrdtnd") && message.toLowerCase().contains(botName)) {
-            twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, "fight2"));
-            return;
-        }
         if (message.toLowerCase().startsWith("@" + botName)) {
             message = message.substring(botName.length() + 1).trim();
             pBotService.getAnswer(username, message).thenAccept(answer -> {

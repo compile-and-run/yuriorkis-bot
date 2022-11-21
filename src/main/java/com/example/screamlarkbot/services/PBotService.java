@@ -1,5 +1,6 @@
 package com.example.screamlarkbot.services;
 
+import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.models.pbot.Dialog;
 import com.example.screamlarkbot.models.pbot.PBotResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,8 @@ public class PBotService {
 
     private final RestTemplate restTemplate;
 
+    private final Translator translator;
+
     @Value("${screamlark-bot.bot-name}")
     private String botName;
 
@@ -57,7 +60,7 @@ public class PBotService {
         map.add("request", message);
         map.add("bot_name", botName);
         map.add("user_name", username);
-        if (LocaleContextHolder.getLocale().equals(Locale.ENGLISH)) {
+        if (translator.getLocale().equals(Locale.forLanguageTag("en"))) {
             map.add("dialog_lang", "en");
         } else {
             map.add("dialog_lang", "ru");
