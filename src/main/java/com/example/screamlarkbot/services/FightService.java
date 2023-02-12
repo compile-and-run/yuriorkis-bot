@@ -71,7 +71,13 @@ public class FightService {
             return;
         }
         int damage = ThreadLocalRandom.current().nextInt(MIN_DAMAGE, MAX_DAMAGE + 1);
-        fighter.decreaseHp(damage);
+
+        // или upperCase, я не знаю :)
+        if (puncher.getUsername().equals("collider3000"))
+            fighter.decreaseHp(damage * 2);
+        else
+            fighter.decreaseHp(damage);
+
         puncher.updateLastPunch();
         damageHandler.onDamage(puncher, fighter, damage);
         if (fighter.getHp() == 0) {

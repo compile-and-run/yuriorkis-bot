@@ -19,6 +19,10 @@ public class Fighter {
         }
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
     public void updateLastPunch() {
         lastPunch = LocalDateTime.now();
     }
