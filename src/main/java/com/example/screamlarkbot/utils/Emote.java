@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 public enum Emote {
     FROG_WAVE("FrogWave"),
     LIZARD_PLS("lizardPls"),
+    VERY_JAM("VeryJam"),
     FEELS_WEAK_MAN("FeelsWeakMan"),
     PEEPO_CLAP("peepoClap"),
     OOOO("OOOO"),

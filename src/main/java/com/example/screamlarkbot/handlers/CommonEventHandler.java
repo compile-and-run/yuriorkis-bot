@@ -55,6 +55,7 @@ public class CommonEventHandler {
         Commands.registerCommand(eventManager, HELP_COMMAND, this::processHelp);
         Commands.registerCommand(eventManager, LANG_COMMAND, this::processLang);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
+        eventManager.onEvent(ChannelMessageEvent.class, this::reactOnVeryJam);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
         eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
@@ -98,21 +99,30 @@ public class CommonEventHandler {
         }
     }
 
-    private void reactOnLizardPls(ChannelMessageEvent event) {
+    private void reactToDance(ChannelMessageEvent event, Emote emote) {
         String message = event.getMessage();
 
         String[] words = message.split(" ");
+        String emoteText = emote.toString();
 
-        long lizardNumber = Arrays.stream(words)
-                .filter(w -> w.equals(Emote.LIZARD_PLS.toString()))
-                .count();
+        int emoteCounter = (int) Arrays.stream(words)
+            .filter(word -> word.equals(emoteText))
+            .count();
 
-        if (lizardNumber > 0) {
-            String response = IntStream.range(0, (int) lizardNumber)
-                    .mapToObj(n -> Emote.LIZARD_PLS.toString())
-                    .collect(Collectors.joining(" "));
+        if (emoteCounter > 0) {
+            String response = IntStream.range(0, emoteCounter)
+                .mapToObj(n -> emoteText)
+                .collect(Collectors.joining(" "));
             twitchClient.getChat().sendMessage(channelName, response);
         }
+    }
+
+    private void reactOnLizardPls(ChannelMessageEvent event) {
+        reactToDance(event, Emote.LIZARD_PLS);
+    }
+
+    private void reactOnVeryJam(ChannelMessageEvent event) {
+        reactToDance(event, Emote.VERY_JAM);
     }
 
     private void handleFollow(FollowEvent event) {
