@@ -54,7 +54,7 @@ public class CommonEventHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
         Commands.registerCommand(eventManager, HELP_COMMAND, this::processHelp);
         Commands.registerCommand(eventManager, LANG_COMMAND, this::processLang);
-        eventManager.onEvent(ChannelMessageEvent.class, this::reactOnLizardPls);
+        eventManager.onEvent(ChannelMessageEvent.class, this::reactToDances);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
         eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
         eventManager.onEvent(ChannelGoLiveEvent.class, this::handleGoLive);
@@ -98,7 +98,20 @@ public class CommonEventHandler {
         }
     }
 
-    private void reactOnLizardPls(ChannelMessageEvent event) {
+    private void reactToDances(ChannelMessageEvent event) {
+        List<String> dancingEmotes = Arrays.asList(
+            Emote.LIZARD_PLS.toString(),
+            Emote.VERY_JAM.toString()
+        );
+
+        String[] words = event.getMessage().split(" ");
+        String danceText = Arrays.stream(words).filter(dancingEmotes::contains).collect(Collectors.joining(" "));
+
+        if (danceText.length() > 0)
+            twitchClient.getChat().sendMessage(channelName, danceText);
+    }
+
+    /*private void reactOnLizardPls(ChannelMessageEvent event) {
         String message = event.getMessage();
 
         String[] words = message.split(" ");
@@ -113,7 +126,7 @@ public class CommonEventHandler {
                     .collect(Collectors.joining(" "));
             twitchClient.getChat().sendMessage(channelName, response);
         }
-    }
+    }*/
 
     private void handleFollow(FollowEvent event) {
         String username = event.getUser().getName();
