@@ -1,9 +1,11 @@
 package com.example.screamlarkbot.handlers;
 
 import com.example.screamlarkbot.lang.Translator;
+import com.example.screamlarkbot.models.dancer.DanceEmotes;
 import com.example.screamlarkbot.models.dancer.DancerViewer;
 import com.example.screamlarkbot.services.DancerViewerService;
 import com.example.screamlarkbot.utils.Commands;
+import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
@@ -36,9 +38,11 @@ public class DancersMessageHandler {
     private void handleDance(ChannelMessageEvent event) {
         String username = event.getUser().getName();
         String message = event.getMessage();
-        if (message.matches("(.*)lizardPls(.*)")) {
-            dancerViewerService.incrementScore(username);
-        }
+        List<String> danceEmotes = DanceEmotes.asStringList();
+
+        for (String danceEmote : danceEmotes)
+            if (message.matches("(.*)" + danceEmote + "(.*)"))
+                dancerViewerService.incrementScore(username);
     }
 
     private void handleDancersCommand(ChannelMessageEvent event, String args) {
