@@ -1,6 +1,7 @@
 package com.example.screamlarkbot.handlers;
 
 import com.example.screamlarkbot.lang.Translator;
+import com.example.screamlarkbot.models.dancer.DanceEmotes;
 import com.example.screamlarkbot.utils.Commands;
 import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
@@ -99,10 +100,7 @@ public class CommonEventHandler {
     }
 
     private void reactToDances(ChannelMessageEvent event) {
-        List<String> dancingEmotes = Arrays.asList(
-            Emote.LIZARD_PLS.toString(),
-            Emote.VERY_JAM.toString()
-        );
+        var dancingEmotes = DanceEmotes.asStringList();
 
         String[] words = event.getMessage().split(" ");
         String danceText = Arrays.stream(words).filter(dancingEmotes::contains).collect(Collectors.joining(" "));

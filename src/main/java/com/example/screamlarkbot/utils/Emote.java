@@ -17,7 +17,9 @@ public enum Emote {
     MADGE_KNIFE("Madgeknife"),
     PEEPO_SMART("peepoSmart"),
     NOOOO("NOOOO"),
-    VERY_JAM("VeryJam");
+    VERY_JAM("VeryJam"),
+    FORSEN_PLS("forsenPls"),
+    CRAB_PLS("crabPls");
 
     private final String name;
 
