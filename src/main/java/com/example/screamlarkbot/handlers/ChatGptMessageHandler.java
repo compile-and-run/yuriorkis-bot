@@ -58,7 +58,7 @@ public class ChatGptMessageHandler {
         if (message.toLowerCase().startsWith("@" + botName)) {
             chatGptService.generateWithCoolDown(messages)
                 .thenAccept(responses -> sendMessages(username, responses));
-        } else if (event.getFiredAtInstant().toEpochMilli() % 20 == 0) {
+        } else if (event.getFiredAtInstant().toEpochMilli() % 30 == 0) {
             chatGptService.generate(messages)
                 .thenAccept(responses -> sendMessages(username, responses));
         }
