@@ -69,9 +69,9 @@ public class BotConfiguration {
     private SimpleClientHttpRequestFactory getClientHttpRequestFactory() {
         SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
         // Connect timeout
-        clientHttpRequestFactory.setConnectTimeout(10_000);
+        clientHttpRequestFactory.setConnectTimeout(30_000);
         // Read timeout
-        clientHttpRequestFactory.setReadTimeout(10_000);
+        clientHttpRequestFactory.setReadTimeout(30_000);
         return clientHttpRequestFactory;
     }
 
