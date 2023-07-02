@@ -57,7 +57,7 @@ public class ChatGptService {
 
     @Async
     @Retryable(value = Exception.class, maxAttempts = 10)
-    public CompletableFuture<List<String>> generate(List<Message> messages) {
+    public CompletableFuture<List<String>> generateWithCoolDown(List<Message> messages) {
         synchronized (this) {
             if (lastMessageTime.plus(SHORT_COOL_DOWN, ChronoUnit.SECONDS).isAfter(Instant.now())) {
                 var response = translator.toLocale("busy");
@@ -70,7 +70,12 @@ public class ChatGptService {
             responses--;
             lastMessageTime = Instant.now();
         }
+        return generate(messages);
+    }
 
+    @Async
+    @Retryable(value = Exception.class, maxAttempts = 10)
+    public CompletableFuture<List<String>> generate(List<Message> messages) {
         log.info("ChatGPT is working...");
 
         var system = SYSTEM;
