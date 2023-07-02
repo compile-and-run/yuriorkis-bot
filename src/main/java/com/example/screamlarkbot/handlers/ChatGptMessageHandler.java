@@ -54,21 +54,25 @@ public class ChatGptMessageHandler {
             messages = new ArrayList<>(chat.getMessages());
         }
 
+        if (!isChannelLive()) return;
         if (message.toLowerCase().startsWith("@" + botName)) {
-            if (!isChannelLive()) return;
-            chatGptService.generate(messages).thenAccept(responses -> {
-                if (!responses.isEmpty()) {
-                    for (String response : responses) {
-                        chat.addBotMessage(response);
-                        twitchClient.getChat().sendMessage(event.getChannel().getName(), Messages.reply(username, response));
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
+            chatGptService.generateWithCoolDown(messages)
+                .thenAccept(responses -> sendMessages(username, responses));
+        } else if (event.getFiredAtInstant().toEpochMilli() % 10 == 0) {
+            chatGptService.generate(messages)
+                .thenAccept(responses -> sendMessages(username, responses));
+        }
+    }
+
+    private void sendMessages(String username, List<String> messages) {
+        for (String message : messages) {
+            chat.addBotMessage(message);
+            twitchClient.getChat().sendMessage(channelName, Messages.reply(username, message));
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
