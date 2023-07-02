@@ -1,5 +1,6 @@
 package com.example.screamlarkbot.handlers;
 
+import com.example.screamlarkbot.models.gpt.Message;
 import com.example.screamlarkbot.services.Chat;
 import com.example.screamlarkbot.services.ChatGptService;
 import com.example.screamlarkbot.utils.Messages;
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -45,10 +47,16 @@ public class ChatGptMessageHandler {
     private void sendReply(ChannelMessageEvent event) {
         var username = event.getUser().getName();
         var message = event.getMessage();
-        chat.addUserMessage(username, message);
+
+        List<Message> messages;
+        synchronized (this) {
+            chat.addUserMessage(username, message);
+            messages = new ArrayList<>(chat.getMessages());
+        }
+
         if (message.toLowerCase().startsWith("@" + botName)) {
             if (!isChannelLive()) return;
-            chatGptService.generate(chat).thenAccept(responses -> {
+            chatGptService.generate(messages).thenAccept(responses -> {
                 if (!responses.isEmpty()) {
                     for (String response : responses) {
                         chat.addBotMessage(response);
