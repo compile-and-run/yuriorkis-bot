@@ -90,30 +90,35 @@ public class ChatGptService {
         var headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + gptKey);
 
-        ResponseEntity<ChatGptResponse> response = restTemplate.exchange(
-            URL,
-            HttpMethod.POST,
-            new HttpEntity<>(request, headers),
-            ChatGptResponse.class
-        );
-        lastMessageTime = Instant.now();
+        try {
+            ResponseEntity<ChatGptResponse> response = restTemplate.exchange(
+                URL,
+                HttpMethod.POST,
+                new HttpEntity<>(request, headers),
+                ChatGptResponse.class
+            );
+            lastMessageTime = Instant.now();
 
-        if (!response.hasBody()) {
-            log.info("response body is empty");
+            if (!response.hasBody()) {
+                log.info("response body is empty");
+                return CompletableFuture.completedFuture(List.of());
+            }
+
+            ChatGptResponse body = response.getBody();
+            if (body.getChoices() == null || body.getChoices().isEmpty()) {
+                log.info("there is no choices");
+                return CompletableFuture.completedFuture(List.of());
+            }
+
+            Choice choice = body.getChoices().get(0);
+            var answer = choice.getMessage().getContent();
+            List<String> responses = split(answer, MAX_SIZE);
+
+            return CompletableFuture.completedFuture(responses);
+        } catch (Exception e) {
+            log.error("there's been an exception while sending a request to chatGPT", e);
             return CompletableFuture.completedFuture(List.of());
         }
-
-        ChatGptResponse body = response.getBody();
-        if (body.getChoices() == null || body.getChoices().isEmpty()) {
-            log.info("there is no choices");
-            return CompletableFuture.completedFuture(List.of());
-        }
-
-        Choice choice = body.getChoices().get(0);
-        var answer = choice.getMessage().getContent();
-        List<String> responses = split(answer, MAX_SIZE);
-
-        return CompletableFuture.completedFuture(responses);
     }
 
     private static List<String> split(String s, int chunkSize) {
