@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -48,23 +47,28 @@ public class ChatGptService {
     private String gptKey;
 
     private Instant lastMessageTime = Instant.MIN;
-    private final AtomicInteger responses = new AtomicInteger(RESPONSES_PER_HOUR);
+    private int responses = RESPONSES_PER_HOUR;
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
-    public void updateResponseLimit() {
-        responses.set(RESPONSES_PER_HOUR);
+    public synchronized void updateResponseLimit() {
+        responses = RESPONSES_PER_HOUR;
+        log.info("response limit has been updated!");
     }
 
     @Async
     @Retryable(value = Exception.class, maxAttempts = 10)
-    public CompletableFuture<List<String>> generate(Chat chat) {
-        if (lastMessageTime.plus(SHORT_COOL_DOWN, ChronoUnit.SECONDS).isAfter(Instant.now())) {
-            var response = translator.toLocale("busy");
-            return CompletableFuture.completedFuture(List.of(response));
-        }
-        if (responses.getAndDecrement() < 0) {
-            var response = translator.toLocale("resting");
-            return CompletableFuture.completedFuture(List.of(response));
+    public CompletableFuture<List<String>> generate(List<Message> messages) {
+        synchronized (this) {
+            if (lastMessageTime.plus(SHORT_COOL_DOWN, ChronoUnit.SECONDS).isAfter(Instant.now())) {
+                var response = translator.toLocale("busy");
+                return CompletableFuture.completedFuture(List.of(response));
+            }
+            if (responses <= 0) {
+                var response = translator.toLocale("resting");
+                return CompletableFuture.completedFuture(List.of(response));
+            }
+            responses--;
+            lastMessageTime = Instant.now();
         }
 
         log.info("ChatGPT is working...");
@@ -76,13 +80,13 @@ public class ChatGptService {
             system += "Please, always answer in Russian.";
         }
 
-        List<Message> messages = new ArrayList<>();
-        messages.add(new Message("system", null, system));
-        messages.addAll(chat.getMessages());
+        List<Message> requestMessages = new ArrayList<>();
+        requestMessages.add(new Message("system", null, system));
+        requestMessages.addAll(messages);
 
         var request = ChatGptRequest.builder()
             .model("gpt-3.5-turbo")
-            .messages(messages)
+            .messages(requestMessages)
             .temperature(1f)
             .maxTokens(500)
             .build();
@@ -97,7 +101,6 @@ public class ChatGptService {
                 new HttpEntity<>(request, headers),
                 ChatGptResponse.class
             );
-            lastMessageTime = Instant.now();
 
             if (!response.hasBody()) {
                 log.info("response body is empty");
