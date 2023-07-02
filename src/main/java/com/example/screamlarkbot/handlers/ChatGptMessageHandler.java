@@ -47,7 +47,7 @@ public class ChatGptMessageHandler {
         var message = event.getMessage();
         chat.addUserMessage(username, message);
         if (message.toLowerCase().startsWith("@" + botName)) {
-            //if (!isChannelLive()) return;
+            if (!isChannelLive()) return;
             chatGptService.generate(chat).thenAccept(responses -> {
                 if (!responses.isEmpty()) {
                     for (String response : responses) {
