@@ -35,7 +35,7 @@ public class ChatGptService {
     private static final String URL = "https://api.openai.com/v1/chat/completions";
     private static final String SYSTEM = Files.getResourceFileAsString("gpt-system.txt");
 
-    private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname
+    private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname and 8 is for VeryPog
 
     private static final int SHORT_COOL_DOWN = 10; // in seconds
     private static final int RESPONSES_PER_HOUR = 35;
@@ -66,56 +66,54 @@ public class ChatGptService {
             var response = translator.toLocale("resting");
             return CompletableFuture.completedFuture(List.of(response));
         }
-        try {
-            log.info("ChatGPT is working...");
 
-            var system = SYSTEM;
-            if (translator.getLocale().equals(Locale.ENGLISH)) {
-                system += "Please, always answer in English.";
-            } else {
-                system += "Please, always answer in Russian.";
-            }
+        log.info("ChatGPT is working...");
 
-            List<Message> messages = new ArrayList<>();
-            messages.add(new Message("system", null, system));
-            messages.addAll(chat.getMessages());
-
-            var request = ChatGptRequest.builder()
-                .model("gpt-3.5-turbo")
-                .messages(messages)
-                .temperature(1f)
-                .maxTokens(500)
-                .build();
-
-            var headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + gptKey);
-
-            ResponseEntity<ChatGptResponse> response = restTemplate.exchange(
-                URL,
-                HttpMethod.POST,
-                new HttpEntity<>(request, headers),
-                ChatGptResponse.class
-            );
-
-            if (!response.hasBody()) {
-                log.info("response body is empty");
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            ChatGptResponse body = response.getBody();
-            if (body.getChoices() == null || body.getChoices().isEmpty()) {
-                log.info("there is no choices");
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            Choice choice = body.getChoices().get(0);
-            var answer = choice.getMessage().getContent();
-            List<String> responses = split(answer, MAX_SIZE);
-
-            return CompletableFuture.completedFuture(responses);
-        } finally {
-            lastMessageTime = Instant.now();
+        var system = SYSTEM;
+        if (translator.getLocale().equals(Locale.ENGLISH)) {
+            system += "Please, always answer in English.";
+        } else {
+            system += "Please, always answer in Russian.";
         }
+
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message("system", null, system));
+        messages.addAll(chat.getMessages());
+
+        var request = ChatGptRequest.builder()
+            .model("gpt-3.5-turbo")
+            .messages(messages)
+            .temperature(1f)
+            .maxTokens(500)
+            .build();
+
+        var headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + gptKey);
+
+        ResponseEntity<ChatGptResponse> response = restTemplate.exchange(
+            URL,
+            HttpMethod.POST,
+            new HttpEntity<>(request, headers),
+            ChatGptResponse.class
+        );
+        lastMessageTime = Instant.now();
+
+        if (!response.hasBody()) {
+            log.info("response body is empty");
+            return CompletableFuture.completedFuture(List.of());
+        }
+
+        ChatGptResponse body = response.getBody();
+        if (body.getChoices() == null || body.getChoices().isEmpty()) {
+            log.info("there is no choices");
+            return CompletableFuture.completedFuture(List.of());
+        }
+
+        Choice choice = body.getChoices().get(0);
+        var answer = choice.getMessage().getContent();
+        List<String> responses = split(answer, MAX_SIZE);
+
+        return CompletableFuture.completedFuture(responses);
     }
 
     private static List<String> split(String s, int chunkSize) {
