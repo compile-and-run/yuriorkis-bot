@@ -35,7 +35,7 @@ public class ChatGptService {
     private static final String URL = "https://api.openai.com/v1/chat/completions";
     private static final String SYSTEM = Files.getResourceFileAsString("gpt-system.txt");
 
-    private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname and 8 is for VeryPog
+    private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname
 
     private static final int SHORT_COOL_DOWN = 10; // in seconds
     private static final int RESPONSES_PER_HOUR = 35;
