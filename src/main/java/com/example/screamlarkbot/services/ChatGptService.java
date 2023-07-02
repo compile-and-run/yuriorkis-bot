@@ -117,7 +117,7 @@ public class ChatGptService {
             return CompletableFuture.completedFuture(responses);
         } catch (Exception e) {
             log.error("there's been an exception while sending a request to chatGPT", e);
-            return CompletableFuture.completedFuture(List.of());
+            throw new RuntimeException(e);
         }
     }
 
