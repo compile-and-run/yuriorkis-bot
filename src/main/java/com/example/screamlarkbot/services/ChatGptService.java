@@ -92,7 +92,7 @@ public class ChatGptService {
         var request = ChatGptRequest.builder()
             .model("gpt-3.5-turbo")
             .messages(requestMessages)
-            .temperature(1f)
+            .temperature(0.7f)
             .maxTokens(500)
             .build();
 
