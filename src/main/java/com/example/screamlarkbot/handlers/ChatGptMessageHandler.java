@@ -3,7 +3,6 @@ package com.example.screamlarkbot.handlers;
 import com.example.screamlarkbot.models.gpt.Message;
 import com.example.screamlarkbot.services.Chat;
 import com.example.screamlarkbot.services.ChatGptService;
-import com.example.screamlarkbot.utils.Messages;
 import com.github.philippheuer.events4j.core.EventManager;
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent;
@@ -57,17 +56,17 @@ public class ChatGptMessageHandler {
         if (!isChannelLive()) return;
         if (message.toLowerCase().startsWith("@" + botName)) {
             chatGptService.generateWithCoolDown(messages)
-                .thenAccept(responses -> sendMessages(username, responses));
+                .thenAccept(this::sendMessages);
         } else if (event.getFiredAtInstant().toEpochMilli() % 40 == 0) {
             chatGptService.generate(messages)
-                .thenAccept(responses -> sendMessages(username, responses));
+                .thenAccept(this::sendMessages);
         }
     }
 
-    private void sendMessages(String username, List<String> messages) {
+    private void sendMessages(List<String> messages) {
         for (String message : messages) {
             chat.addBotMessage(message);
-            twitchClient.getChat().sendMessage(channelName, Messages.reply(username, message));
+            twitchClient.getChat().sendMessage(channelName, message);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
