@@ -38,7 +38,7 @@ public class ChatGptService {
     private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname
 
     private static final int SHORT_COOL_DOWN = 12; // in seconds
-    private static final int RESPONSES_PER_HOUR = 40;
+    private static final int RESPONSES_PER_HOUR = 35;
 
     private final RestTemplate restTemplate;
 
