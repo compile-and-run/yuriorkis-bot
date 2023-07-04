@@ -6,6 +6,7 @@ import com.example.screamlarkbot.models.gpt.ChatGptResponse;
 import com.example.screamlarkbot.models.gpt.Choice;
 import com.example.screamlarkbot.models.gpt.Message;
 import com.example.screamlarkbot.utils.Files;
+import com.example.screamlarkbot.utils.Messages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,7 @@ public class ChatGptService {
     private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname
 
     private static final int SHORT_COOL_DOWN = 12; // in seconds
-    private static final int RESPONSES_PER_HOUR = 35;
+    private static final int RESPONSES_PER_HOUR = 40;
 
     private final RestTemplate restTemplate;
 
@@ -58,14 +59,15 @@ public class ChatGptService {
     @Async
     @Retryable(value = Exception.class, maxAttempts = 10)
     public CompletableFuture<List<String>> generateWithCoolDown(List<Message> messages) {
+        String username = messages.get(messages.size() - 1).getName();
         synchronized (this) {
             if (lastMessageTime.plus(SHORT_COOL_DOWN, ChronoUnit.SECONDS).isAfter(Instant.now())) {
                 var response = translator.toLocale("busy");
-                return CompletableFuture.completedFuture(List.of(response));
+                return CompletableFuture.completedFuture(List.of(Messages.reply(username, response)));
             }
             if (responses <= 0) {
                 var response = translator.toLocale("resting");
-                return CompletableFuture.completedFuture(List.of(response));
+                return CompletableFuture.completedFuture(List.of(Messages.reply(username, response)));
             }
             responses--;
             lastMessageTime = Instant.now();
