@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Chat {
-    private final int MAX_SIZE = 10;
+    private final int MAX_SIZE = 15;
     private final List<Message> messages = new ArrayList<>();
 
     public synchronized void addUserMessage(String name, String message) {
