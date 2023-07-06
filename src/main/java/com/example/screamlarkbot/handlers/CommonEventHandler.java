@@ -65,6 +65,17 @@ public class CommonEventHandler {
         eventManager.onEvent(PollsEvent.class, this::handlePoll);
         eventManager.onEvent(PredictionCreatedEvent.class, this::handlePredictionCreate);
         eventManager.onEvent(PredictionUpdatedEvent.class, this::handlePredictionUpdated);
+        eventManager.onEvent(ChannelMessageEvent.class, this::handleBorodaLink);
+    }
+
+    private void handleBorodaLink(ChannelMessageEvent event) {
+        String name = event.getUser().getName();
+        String message = event.getMessage();
+
+        // Он то просто youtube.com кидает, то youtu.be
+        if (name.equalsIgnoreCase("lzheboroda") && message.contains("youtu")) {
+            twitchClient.getChat().sendMessage(channelName, Messages.reply(name, Emote.VERY_JAM + " " + "muted"));
+        }
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
