@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class ChatGptService {
     private static final String URL = "https://api.openai.com/v1/chat/completions";
-    private static final String SYSTEM = Files.getResourceFileAsString("gpt-system.txt");
+    private static String personality = Files.getResourceFileAsString("gpt-system.txt");
 
     private static final int MAX_SIZE = 500 - 27; // 27 is for a nickname and 8 is for VeryPog
 
@@ -49,6 +49,10 @@ public class ChatGptService {
 
     private Instant lastMessageTime = Instant.MIN;
     private final AtomicInteger responses = new AtomicInteger(RESPONSES_PER_HOUR);
+
+    public static void setPersonality(String value) {
+        personality = value;
+    }
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
     public void updateResponseLimit() {
@@ -69,7 +73,7 @@ public class ChatGptService {
 
         log.info("ChatGPT is working...");
 
-        var system = SYSTEM;
+        var system = personality;
         if (translator.getLocale().equals(Locale.ENGLISH)) {
             system += "Please, always answer in English.";
         } else {

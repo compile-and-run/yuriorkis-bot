@@ -2,6 +2,8 @@ package com.example.screamlarkbot.handlers;
 
 import com.example.screamlarkbot.lang.Translator;
 import com.example.screamlarkbot.models.dancer.DanceEmotes;
+import com.example.screamlarkbot.repositories.GptPersonalityRepository;
+import com.example.screamlarkbot.services.ChatGptService;
 import com.example.screamlarkbot.utils.Commands;
 import com.example.screamlarkbot.utils.Emote;
 import com.example.screamlarkbot.utils.Messages;
@@ -38,6 +40,7 @@ public class CommonEventHandler {
 
     private static final String HELP_COMMAND = "!help";
     private static final String LANG_COMMAND = "!lang";
+    private static final String PERSONALITY_COMMAND = "!person";
     private static final int MIN_DAYS_AFTER_CREATION = 7;
 
     private final TwitchClient twitchClient;
@@ -55,6 +58,7 @@ public class CommonEventHandler {
         eventManager.onEvent(ChannelMessageEvent.class, this::printChannelMessage);
         Commands.registerCommand(eventManager, HELP_COMMAND, this::processHelp);
         Commands.registerCommand(eventManager, LANG_COMMAND, this::processLang);
+        Commands.registerCommand(eventManager, PERSONALITY_COMMAND, this::updatePersonality);
         eventManager.onEvent(ChannelMessageEvent.class, this::reactToDances);
         eventManager.onEvent(FollowEvent.class, this::handleFollow);
         eventManager.onEvent(SubscriptionEvent.class, this::handleSubscription);
@@ -65,6 +69,17 @@ public class CommonEventHandler {
         eventManager.onEvent(PollsEvent.class, this::handlePoll);
         eventManager.onEvent(PredictionCreatedEvent.class, this::handlePredictionCreate);
         eventManager.onEvent(PredictionUpdatedEvent.class, this::handlePredictionUpdated);
+        eventManager.onEvent(ChannelMessageEvent.class, this::handleBorodaLink);
+    }
+
+    private void handleBorodaLink(ChannelMessageEvent event) {
+        String name = event.getUser().getName();
+        String message = event.getMessage();
+
+        // Он то просто youtube.com кидает, то youtu.be
+        if (name.equalsIgnoreCase("lzheboroda") && message.contains("youtu")) {
+            twitchClient.getChat().sendMessage(channelName, Messages.reply(name, Emote.VERY_JAM + " " + "muted"));
+        }
     }
 
     private void printChannelMessage(ChannelMessageEvent event) {
@@ -246,5 +261,23 @@ public class CommonEventHandler {
             var response = translator.toLocale("predictionCancel");
             twitchClient.getChat().sendMessage(channelName, String.format(response, predictionName));
         }
+    }
+
+    private void updatePersonality(ChannelMessageEvent event, String args) {
+        if (GptPersonalityRepository.isValidPersonality(args)) {
+            boolean isMod = event.getPermissions().contains(CommandPermission.MODERATOR);
+            String username = event.getUser().getName();
+
+            if (isMod) {
+                ChatGptService.setPersonality(GptPersonalityRepository.getPersonality(args));
+                twitchClient.getChat().sendMessage(channelName, Messages.reply(username, "теперь я " + args + Emote.VERY_POG));
+                return;
+            }
+
+            twitchClient.getChat().sendMessage(channelName, Messages.reply(username, "ты не модератор VeryWeird"));
+            return;
+        }
+
+        twitchClient.getChat().sendMessage(channelName, "нет такой личности VeryWeird");
     }
 }
