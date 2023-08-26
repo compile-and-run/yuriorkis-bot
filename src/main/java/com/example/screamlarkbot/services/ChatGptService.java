@@ -82,7 +82,7 @@ public class ChatGptService {
 
         var system = SYSTEM;
         if (translator.getLocale().equals(Locale.ENGLISH)) {
-            system += "Please, always answer in English.";
+            system += "Please, always answer in British English and be very posh and polite.";
         } else {
             system += "Please, always answer in Russian.";
         }
